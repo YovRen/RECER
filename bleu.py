@@ -53,8 +53,7 @@ def compute_bleu(reference_corpus, translation_corpus, max_order=4,
   possible_matches_by_order = [0] * max_order
   reference_length = 0
   translation_length = 0
-  for (references, translation) in zip(reference_corpus,
-                                       translation_corpus):
+  for (references, translation) in zip(reference_corpus, translation_corpus):
     reference_length += min(len(r) for r in references)
     translation_length += len(translation)
 
@@ -87,13 +86,15 @@ def compute_bleu(reference_corpus, translation_corpus, max_order=4,
     geo_mean = math.exp(p_log_sum)
   else:
     geo_mean = 0
-
   ratio = float(translation_length) / reference_length
 
   if ratio > 1.0:
     bp = 1.
   else:
-    bp = math.exp(1 - 1. / ratio)
+    if ratio==0:
+      bp = 0
+    else:
+      bp = math.exp(1 - 1. / ratio)
 
   bleu = geo_mean * bp
 

@@ -29,6 +29,39 @@ def bleu_score(references, generated, n_gram=4, smooth=False):
     return bleu_s * 100
 
 
+def dist_score(generated):
+    unigram_count = 0
+    bigram_count = 0
+    trigram_count=0
+    quagram_count=0
+    unigram_set = set()
+    bigram_set = set()
+    trigram_set=set()
+    quagram_set=set()
+    # outputs is a list which contains several sentences, each sentence contains several words
+    for sen in generated:
+        for word in sen:
+            unigram_count += 1
+            unigram_set.add(word)
+        for start in range(len(sen) - 1):
+            bg = str(sen[start]) + ' ' + str(sen[start + 1])
+            bigram_count += 1
+            bigram_set.add(bg)
+        for start in range(len(sen)-2):
+            trg=str(sen[start]) + ' ' + str(sen[start + 1]) + ' ' + str(sen[start + 2])
+            trigram_count+=1
+            trigram_set.add(trg)
+        for start in range(len(sen)-3):
+            quag=str(sen[start]) + ' ' + str(sen[start + 1]) + ' ' + str(sen[start + 2]) + ' ' + str(sen[start + 3])
+            quagram_count+=1
+            quagram_set.add(quag)
+    dist1 = len(unigram_set) / len(generated)#unigram_count
+    dist2 = len(bigram_set) / len(generated)#bigram_count
+    dist3 = len(trigram_set)/len(generated)#trigram_count
+    dist4 = len(quagram_set)/len(generated)#quagram_count
+    return dist1, dist2, dist3, dist4
+
+
 def two_seq_same(sa, sb):
     if len(sa) != len(sb):
         return False
@@ -143,12 +176,8 @@ def postprocessing(string):
     return string
 
 
-def ids2tokens(ids, tokenizer, eos):
-    text = tokenizer.decode(ids)
+def ids2tokens(ids, tokenizer):
+    text = tokenizer.decode(ids, skip_special_tokens=True)
     text = postprocessing(text)  # process punctuations: "good!" -> "good !"
-    tokens = []
-    for token in text.split():
-        if token == eos:
-            break
-        tokens.append(token)
+    tokens = text.split()
     return tokens

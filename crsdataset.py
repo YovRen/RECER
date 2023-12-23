@@ -1,11 +1,9 @@
+from collections import defaultdict
 import re
 import json
-import pickle as pkl
 import torch
+import pickle as pkl
 from tqdm import tqdm
-import numpy as np
-from collections import defaultdict
-from transformers import GPT2Tokenizer
 from torch.utils.data.dataset import Dataset
 
 class CRSDataset(Dataset):
@@ -14,15 +12,14 @@ class CRSDataset(Dataset):
         self.device = args.device
         self.max_c_length = args.max_c_length
         self.max_r_length = args.max_r_length
-        self.movieId2movie = json.load(open(self.crs_data_path + '/redial_movieId2movie.jsonl', encoding='utf-8'))
-        self.userId2userIdx = json.load(open(self.crs_data_path + '/redial_userId2userIdx.jsonl', encoding='utf-8'))
-        self.concept2conceptIdx = json.load(open(self.crs_data_path + '/concept_concept2conceptIdx.jsonl', encoding='utf-8'))
-        self.movie2dbpediaId = pkl.load(open(self.crs_data_path + '/dbpedia_movie2dbpediaId.pkl', 'rb'))
-        self.movie2dbpediaId[None]=-1
-        self.tokenizer = GPT2Tokenizer.from_pretrained(args.model_path, pad_token = "<|endoftext|>")
-        self.n_dbpedia = len(self.movie2dbpediaId)
-        self.n_concept = len(self.concept2conceptIdx)
-        self.n_user = len(self.userId2userIdx)
+        self.movieId2movie = args.movieId2movie
+        self.userId2userIdx = args.userId2userIdx
+        self.concept2conceptIdx = args.concept2conceptIdx
+        self.movie2dbpediaId = args.movie2dbpediaId
+        self.tokenizer = args.tokenizer
+        self.n_dbpedia = args.n_dbpedia
+        self.n_concept = args.n_concept
+        self.n_user = args.n_user
         f = open(self.crs_data_path + '/' + mode + '_data.jsonl', encoding='utf-8')
         self.datapre = []
         for case in tqdm(f):
@@ -48,8 +45,6 @@ class CRSDataset(Dataset):
                     assert self.movieId2movie[mv] in self.movie2dbpediaId.keys()
                 digits = re.findall(r'@(\d+)', message['text'])
                 processed_text = re.sub(r'#', '!', message['text'])
-                
-                processed_text = '{} {} {}'.format('<|endoftext|>', processed_text, '<|endoftext|>')
                 processed_text = re.sub(r'@(\d+)', '#', processed_text)
                 tokens = self.tokenizer.tokenize(processed_text)
                 input_ids = self.tokenizer(processed_text)['input_ids']
@@ -87,11 +82,11 @@ class CRSDataset(Dataset):
                     dbpedia_vector[dbpediaId] = 1
 
                 userIdx = torch.tensor(int(self.userId2userIdx[str(message_dict['sender_worker_id'])]), dtype=torch.long, device=self.device)
-                context_vector = torch.tensor((history_input_ids + [0] * (self.max_c_length - len(history_input_ids)))[:self.max_c_length], dtype=torch.long, device=self.device)
+                context_vector = torch.tensor((history_input_ids + [50256] * (self.max_c_length - len(history_input_ids)))[:self.max_c_length], dtype=torch.long, device=self.device)
                 context_mask = torch.tensor(([1] * len(history_input_ids) + [0] * (self.max_c_length - len(history_input_ids)))[:self.max_c_length], dtype=torch.long, device=self.device)
                 concept_mask = torch.tensor((history_concept_mask + [0] * (self.max_c_length - len(history_concept_mask)))[:self.max_c_length], dtype=torch.long, device=self.device)
                 dbpedia_mask = torch.tensor((history_dbpedia_mask + [0] * (self.max_c_length - len(history_dbpedia_mask)))[:self.max_c_length], dtype=torch.long, device=self.device)
-                response_vector = torch.tensor((message_dict['input_ids'] + [0] * (self.max_r_length - len(message_dict['input_ids'])))[:self.max_r_length], dtype=torch.long, device=self.device)
+                response_vector = torch.tensor((message_dict['input_ids'] + [50256] * (self.max_r_length - len(message_dict['input_ids'])))[:self.max_r_length], dtype=torch.long, device=self.device)
                 response_mask = torch.tensor(([1]*len(message_dict['input_ids']) + [0] * (self.max_r_length - len(message_dict['input_ids'])))[:self.max_r_length], dtype=torch.long, device=self.device)
                 assert len(context_vector)==len(context_mask)==len(concept_mask)==len(dbpedia_mask)==self.max_c_length
 
@@ -107,3 +102,40 @@ class CRSDataset(Dataset):
     def __len__(self):
         return len(self.datapre)
 
+def dbpedia_edge_list(args):
+    dbpedia_subkg = pkl.load(open(args.crs_data_path + '/dbpedia_subkg.pkl', "rb"))
+    edge_list = []
+    for h in range(2):
+        for movie in range(args.n_dbpedia):
+            edge_list.append((movie, movie, 185))
+            if movie not in dbpedia_subkg:
+                continue
+            for tail_and_relation in dbpedia_subkg[movie]:
+                if movie != tail_and_relation[1] and tail_and_relation[0] != 185:
+                    edge_list.append((movie, tail_and_relation[1], tail_and_relation[0]))
+                    edge_list.append((tail_and_relation[1], movie, tail_and_relation[0]))
+    relation_cnt = defaultdict(int)
+    relation_idx = {}
+    for h, t, r in edge_list:
+        relation_cnt[r] += 1
+    for h, t, r in edge_list:
+        if relation_cnt[r] > 1000 and r not in relation_idx:
+            relation_idx[r] = len(relation_idx)
+    edge_set = list(set([(h, t, relation_idx[r]) for h, t, r in edge_list if relation_cnt[r] > 1000]))
+    return torch.tensor(edge_set,dtype=torch.long, device=args.device)
+
+def concept_edge_list(args):
+    concept2conceptIdx = json.load(open(args.crs_data_path + '/concept_concept2conceptIdx.jsonl', encoding='utf-8'))
+    edges = set()
+    stopwords = set([word.strip() for word in open(args.crs_data_path + '/stopwords.txt', encoding='utf-8')])
+    f = open(args.crs_data_path + '/concept_edges.txt', encoding='utf-8')
+    for line in f:
+        lines = line.strip().split('\t')
+        movie0 = concept2conceptIdx[lines[1].split('/')[0]]
+        movie1 = concept2conceptIdx[lines[2].split('/')[0]]
+        if lines[1].split('/')[0] in stopwords or lines[2].split('/')[0] in stopwords:
+            continue
+        edges.add((movie0, movie1))
+        edges.add((movie1, movie0))
+    edge_set = [[co[0] for co in list(edges)], [co[1] for co in list(edges)]]
+    return torch.tensor(edge_set,dtype=torch.long, device=args.device)
