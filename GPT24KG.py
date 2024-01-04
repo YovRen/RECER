@@ -1,7 +1,4 @@
-from collections import defaultdict
 import torch
-import json
-import pickle as pkl
 import torch.nn as nn
 import torch.nn.functional as F
 from torch_geometric.nn.conv.rgcn_conv import RGCNConv
@@ -40,6 +37,7 @@ class GPT24KG(GPT2Model):
         # gen_loss部分的参数
         self.con_fc = nn.Linear(self.dim, self.embed_dim)
         self.db_fc = nn.Linear(self.dim, self.embed_dim)
+        self.rec_fc = nn.Linear(self.n_dbpedia, self.embed_dim)
         self.config.hidden_size=self.embed_dim
         self.encoder = nn.ModuleList([GPT2Block(self.config,layer_idx=i) for i in range(3)])
         self.gen_fc = nn.Linear(self.embed_dim, self.vocab_size)
@@ -73,17 +71,16 @@ class GPT24KG(GPT2Model):
         dbpedia_mask = dbpedia_mask.to(dtype=self.dtype)  # fp16 compatibility
         dbpedia_mask = (1.0 - dbpedia_mask) * -10000.0
         db_attn = torch.mean(self.con_attn(graph_db, attention_mask=dbpedia_mask)[0], dim=1)
-        # 通过user_emb和db_nodes_features计算rec_scores，对比labels得到rec_loss
-        uc_gate = F.sigmoid(self.gate_fc(torch.cat([con_attn, db_attn], dim=-1)))
-        user_attn = uc_gate * db_attn + (1 - uc_gate) * con_attn
-        rec_scores = F.linear(user_attn, db_nodes_features)
-        rec_loss = self.criterion(rec_scores.squeeze(1).squeeze(1).float(), movieId)
-        rec_loss = torch.sum(rec_loss.float().to(self.device))
         # 通过db_attn和db_nodes_features计算db_scores，对比db_label得到info_loss
         con_scores = F.linear(db_attn, con_nodes_features)
         db_scores = F.linear(con_attn, db_nodes_features)
         info_db_loss = torch.mean(torch.sum(self.mse_loss(db_scores, dbpedia_vector.float()), dim=-1).float())
         info_con_loss = torch.mean(torch.sum(self.mse_loss(con_scores, concept_vector.float()), dim=-1).float())
+        # 通过user_emb和db_nodes_features计算rec_scores，对比labels得到rec_loss
+        uc_gate = F.sigmoid(self.gate_fc(torch.cat([con_attn, db_attn], dim=-1)))
+        user_attn = uc_gate * db_attn + (1 - uc_gate) * con_attn
+        rec_scores = F.linear(user_attn, db_nodes_features)
+        rec_loss = torch.mean(torch.sum(self.criterion(rec_scores.float(), movieId), dim=-1).float())
         # 计算rating_loss--------------------------------------------------------------
         user_emb = self.user_embeddings(userIdx)  # (batch_size, emsize)
         movie_emb = self.movie_embeddings(movieId)  # (batch_size, emsize)
@@ -92,9 +89,10 @@ class GPT24KG(GPT2Model):
         # 计算gen_scores和preds---------------------------------------------------------------------------------------------------
         con_emb = self.con_fc(con_attn)
         db_emb = self.db_fc(db_attn)
+        rec_emb = self.rec_fc(rec_scores)
         context_emb = self.wte(context_vector)  # (batch_size, tgt_len, emsize)
-        input_emb = torch.cat([user_emb.unsqueeze(1), movie_emb.unsqueeze(1), context_emb], 1) # (batch_size, total_len, emsize)
-        input_mask = torch.cat([torch.ones((self.batch_size, 2), dtype=torch.int64).to(self.device), context_mask], 1)
+        input_emb = torch.cat([user_emb.unsqueeze(1), movie_emb.unsqueeze(1), rec_emb.unsqueeze(1), context_emb], 1) # (batch_size, total_len, emsize)
+        input_mask = torch.cat([torch.ones((self.batch_size, 3), dtype=torch.int64).to(self.device), context_mask], 1)
         position_ids = torch.arange(0, input_emb.shape[1], dtype=torch.long, device=self.device).unsqueeze(0).view(-1, input_emb.shape[1])
         position_emb = self.wpe(position_ids)
         hidden_emb = input_emb + position_emb
@@ -105,9 +103,9 @@ class GPT24KG(GPT2Model):
         for block in self.encoder:
             hidden_emb = block(hidden_emb, attention_mask=hidden_mask)[0]
         response_emb = self.wte(response_vector)  # (batch_size, tgt_len, emsize)
-        target_emb = torch.cat([user_emb.unsqueeze(1), movie_emb.unsqueeze(1), con_emb.unsqueeze(1), db_emb.unsqueeze(1), response_emb], 1)
-        target_mask = torch.cat([torch.ones((self.batch_size, 4), dtype=torch.int64).to(self.device), response_mask], 1)
-        latent = super().forward(attention_mask=target_mask, inputs_embeds=target_emb, encoder_hidden_states=hidden_emb, encoder_attention_mask=input_mask)[0][:,4:,:]
+        target_emb = torch.cat([user_emb.unsqueeze(1), movie_emb.unsqueeze(1),  con_emb.unsqueeze(1), db_emb.unsqueeze(1), rec_emb.unsqueeze(1), response_emb], 1)
+        target_mask = torch.cat([torch.ones((self.batch_size, 5), dtype=torch.int64).to(self.device), response_mask], 1)
+        latent = super().forward(attention_mask=target_mask, inputs_embeds=target_emb, encoder_hidden_states=hidden_emb, encoder_attention_mask=input_mask)[0][:,5:,:]
         gen_scores = self.gen_fc(latent)
         gen_loss = torch.mean(self.criterion(gen_scores.view(-1, gen_scores.size(-1)).to(self.device), response_vector.view(-1).to(self.device)))
         _, preds = gen_scores.max(dim=2)
