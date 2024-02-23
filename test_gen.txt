@@ -1,0 +1,1024 @@
+====================================================================================================
+context:Hi am looking for a movie like @
+response:You should watch @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hi am looking for a movie like @ You should watch @ Is that a great one ? have never seen it . have seen @ 192131 mean @
+response:Yes @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hi am looking for a movie like @ You should watch @ Is that a great one ? have never seen it . have seen @ 192131 mean @
+response:Yes @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hi am looking for a movie like @ You should watch @ Is that a great one ? have never seen it . have seen @ 192131 mean @ Yes @ is very funny and so is @ It sounds like need to check them out
+response:yes you will enjoy them
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hi am looking for a movie like @ You should watch @ Is that a great one ? have never seen it . have seen @ 192131 mean @ Yes @ is very funny and so is @ It sounds like need to check them out yes you will enjoy them appreciate your time . will need to check those out . Are there any others you would recommend ?
+response:yes @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hi am looking for a movie like @ You should watch @ Is that a great one ? have never seen it . have seen @ 192131 mean @ Yes @ is very funny and so is @ It sounds like need to check them out yes you will enjoy them appreciate your time . will need to check those out . Are there any others you would recommend ? yes @
+response:and also @
+predict:@
+====================================================================================================
+context:Hi am looking for a movie like @ You should watch @ Is that a great one ? have never seen it . have seen @ 192131 mean @ Yes @ is very funny and so is @ It sounds like need to check them out yes you will enjoy them appreciate your time . will need to check those out . Are there any others you would recommend ? yes @
+response:you are welcome and also @
+predict:@
+====================================================================================================
+context:Hello ! Hello !
+response:What kind of movies do you like ?
+predict:
+====================================================================================================
+context:Hello ! Hello ! What kind of movies do you like ? am looking for a movie recommendation . When was younger really enjoyed the @
+response:Oh , you like scary movies ? recently watched @ 204334
+predict:
+====================================================================================================
+context:Hello ! Hello ! What kind of movies do you like ? am looking for a movie recommendation . When was younger really enjoyed the @ Oh , you like scary movies ? recently watched @ 204334 also enjoyed watching @
+response:It was really good for a new & quot ; scary movie & quot ;
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello ! Hello ! What kind of movies do you like ? am looking for a movie recommendation . When was younger really enjoyed the @ Oh , you like scary movies ? recently watched @ 204334 also enjoyed watching @ It was really good for a new & quot ; scary movie & quot ; do enjoy some of the newer horror movies that have seen as well .
+response:heard that @ 205430 is good . It is still in theaters though .
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello ! Hello ! What kind of movies do you like ? am looking for a movie recommendation . When was younger really enjoyed the @ Oh , you like scary movies ? recently watched @ 204334 also enjoyed watching @ It was really good for a new & quot ; scary movie & quot ; do enjoy some of the newer horror movies that have seen as well . heard that @ 205430 is good . It is still in theaters though . really liked the movie @
+response:Me , too ! It was really creepy , but thought it was good !
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello ! Hello ! What kind of movies do you like ? am looking for a movie recommendation . When was younger really enjoyed the @ Oh , you like scary movies ? recently watched @ 204334 also enjoyed watching @ It was really good for a new & quot ; scary movie & quot ; do enjoy some of the newer horror movies that have seen as well . heard that @ 205430 is good . It is still in theaters though . really liked the movie @ Me , too ! It was really creepy , but thought it was good ! Or @ saw while in theaters , this was a very good movie . It had me on the edge of my seat for the whole show .
+response:'m not sure if saw that one , 'll have to check into it . Sounds familiar , but not sure . Thank you for your
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello ! Hello ! What kind of movies do you like ? am looking for a movie recommendation . When was younger really enjoyed the @ Oh , you like scary movies ? recently watched @ 204334 also enjoyed watching @ It was really good for a new & quot ; scary movie & quot ; do enjoy some of the newer horror movies that have seen as well . heard that @ 205430 is good . It is still in theaters though . really liked the movie @ Me , too ! It was really creepy , but thought it was good ! Or @ saw while in theaters , this was a very good movie . It had me on the edge of my seat for the whole show . 'm not sure if saw that one , 'll
+response:Sure ! like comedies a lot . like movies like @ 175203 and @
+predict:
+====================================================================================================
+context:Hello ! Hello ! What kind of movies do you like ? am looking for a movie recommendation . When was younger really enjoyed the @ Oh , you like scary movies ? recently watched @ 204334 also enjoyed watching @ It was really good for a new & quot ; scary movie & quot ; do enjoy some of the newer horror movies that have seen as well . heard that @ 205430 is good . It is still in theaters though . really liked the movie @ Me , too ! It was really creepy , but thought it was good ! Or @ saw while in theaters , this was a very good movie . It had me on the edge of my seat for the whole show . 'm not sure if saw that one , 'll
+response:Sure ! like comedies a lot . like movies like @ 175203 and @
+predict:
+====================================================================================================
+context:Hello ! Hello ! What kind of movies do you like ? am looking for a movie recommendation . When was younger really enjoyed the @ Oh , you like scary movies ? recently watched @ 204334 also enjoyed watching @ It was really good for a new & quot ; scary movie & quot ; do enjoy some of the newer horror movies that have seen as well . heard that @ 205430 is good . It is still in theaters though . really liked the movie @ Me , too ! It was really creepy , but thought it was good ! Or @ saw while in theaters , this was a very good movie . It had me on the edge of my seat for the whole show . 'm not sure if saw that one , 'll
+response:Sure ! like comedies a lot . like movies like @ 175203 and @
+predict:@
+====================================================================================================
+context:Hello ! Hello ! What kind of movies do you like ? am looking for a movie recommendation . When was younger really enjoyed the @ Oh , you like scary movies ? recently watched @ 204334 also enjoyed watching @ It was really good for a new & quot ; scary movie & quot ; do enjoy some of the newer horror movies that have seen as well . heard that @ 205430 is good . It is still in theaters though . really liked the movie @ Me , too ! It was really creepy , but thought it was good ! Or @ saw while in theaters , this was a very good movie . It had me on the edge of my seat for the whole show . 'm not sure if saw that one , 'll
+response:No problem ! Thank you , too ! : )
+predict:
+====================================================================================================
+context:Tell me what would you like to watch ? @
+response:Did you watch @ 205163 ? Or @ ? i really liked it
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Tell me what would you like to watch ? @ Did you watch @ 205163 ? Or @ ? i really liked it No , think would like to watch @ It 's funny
+response:But You already know what you want to watch You should tell me what kind of movies you like Did you watch @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Tell me what would you like to watch ? @ Did you watch @ 205163 ? Or @ ? i really liked it No , think would like to watch @ It 's funny
+response:But You already know what you want to watch You should tell me what kind of movies you like Did you watch @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Tell me what would you like to watch ? @ Did you watch @ 205163 ? Or @ ? i really liked it No , think would like to watch @ It 's funny But You already know what you want to watch You should tell me what kind of movies you like Did you watch @ ? Do you like scary movies ? Did you watch @ ? Yes like Adam sandler . @ is another good movie by him did not see the movie @
+response:Yes i think so i hope i have helped good bye
+predict:
+====================================================================================================
+context:i would like to watch any movie Tell me any movie Like @ 205163
+response:Have you seen @
+predict:
+====================================================================================================
+context:i would like to watch any movie Tell me any movie Like @ 205163 Have you seen @ i really enjoyed that one Yes and i liked it Which another one would you recommend me ?
+response:Do you like scary Have you seen @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:i would like to watch any movie Tell me any movie Like @ 205163 Have you seen @ i really enjoyed that one Yes and i liked it Which another one would you recommend me ? Do you like scary Have you seen @ i watched @ and a liked it
+response:Or @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:i would like to watch any movie Tell me any movie Like @ 205163 Have you seen @ i really enjoyed that one Yes and i liked it Which another one would you recommend me ? Do you like scary Have you seen @ i watched @ and a liked it Or @ No , i have not seen @ But i 'll try Thank you for helping me Good bye
+response:If you like superhero @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:What kind of movies do you like have you seen @ 205163 ? or @ Yes and i liked them Those are awesome like that kind of movies
+response:@
+predict:
+====================================================================================================
+context:What kind of movies do you like have you seen @ 205163 ? or @ Yes and i liked them Those are awesome like that kind of movies @ i also watched @
+response:those are good movies as well
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:What kind of movies do you like have you seen @ 205163 ? or @ Yes and i liked them Those are awesome like that kind of movies @ i also watched @ those are good movies as well No , i have not watched that one i think i will try that one
+response:@
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Tell me what kind of movies do you like ? like scary movies
+response:did you watch @ 205163
+predict:
+====================================================================================================
+context:Tell me what kind of movies do you like ? like scary movies did you watch @ 205163 i did not but i want to
+response:So , did you watch @ ?
+predict:
+====================================================================================================
+context:Tell me what kind of movies do you like ? like scary movies did you watch @ 205163 i did not but i want to So , did you watch @ ? have you seen @
+response:And @ 204794 ?
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Tell me what kind of movies do you like ? like scary movies did you watch @ 205163 i did not but i want to So , did you watch @ ? have you seen @ And @ 204794 ? no but i like the old one yes i like that versio
+response:Yes i have , that 's why i told you
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Tell me what kind of movies do you like ? like scary movies did you watch @ 205163 i did not but i want to So , did you watch @ ? have you seen @ And @ 204794 ? no but i like the old one yes i like that versio Yes i have , that 's why i told you yes i like that version
+response:and did you watch @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Tell me what kind of movies do you like ? like scary movies did you watch @ 205163 i did not but i want to So , did you watch @ ? have you seen @ And @ 204794 ? no but i like the old one yes i like that versio Yes i have , that 's why i told you yes i like that version and did you watch @ ? That is very scary It is very scary ank you for the suggestions goodbye
+response:i hope i have helped bye good bye
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:like to watch scary movies
+response:tell me what kind of movie do you like ? Did you watch @
+predict:
+====================================================================================================
+context:like to watch scary movies tell me what kind of movie do you like ? Did you watch @ ? And @ 204794 ? have seen the old one
+response:Did you watch @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:like to watch scary movies tell me what kind of movie do you like ? Did you watch @ ? And @ 204794 ? have seen the old one Did you watch @ ? i have not seen the new one i do like the excorcist
+response:Ok , you should watch the new one Even though i would rather the old one And did you watch @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:like to watch scary movies tell me what kind of movie do you like ? Did you watch @ ? And @ 204794 ? have seen the old one Did you watch @ ? i have not seen the new one i do like the excorcist Ok , you should watch the new one Even though i would rather the old one And did you watch @ ? i hope i have helped no have not but it sounds scary ! thank you for the suggestions !
+response:You should try them your welcome good bye
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Tell me what kind of movies do you like ? love to watch funny movies
+response:Did you watch @
+predict:
+====================================================================================================
+context:Tell me what kind of movies do you like ? love to watch funny movies Did you watch @ ? yes , i love adam sandler
+response:and @ ? Yes he is very funny Do
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Tell me what kind of movies do you like ? love to watch funny movies Did you watch @ ? yes , i love adam sandler and @ ? Yes he is very funny Do you not like scary movies ? just watched the mask last night ! there is a new one @ i like some scary movie
+response:And did you watch @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Tell me what kind of movies do you like ? love to watch funny movies Did you watch @ ? yes , i love adam sandler and @ ? Yes he is very funny Do you not like scary movies ? just watched the mask last night ! there is a new one @ i like some scary movie And did you watch @ ? Hahaha you enjoy those kind of movies ! ! i hope i have helped That one is the best ! thanks for the help goodbye !
+response:good bye
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello me what kind of movies do you like ? like all movies , what are your suggestions ?
+response:Did you watch @ 205163 ?
+predict:
+====================================================================================================
+context:Hello me what kind of movies do you like ? like all movies , what are your suggestions ? Did you watch @ 205163 ? No heard it is very good
+response:can tell you to watch @
+predict:
+====================================================================================================
+context:Hello me what kind of movies do you like ? like all movies , what are your suggestions ? Did you watch @ 205163 ? No heard it is very good can tell you to watch @ Yes it is really good love Adam Sandler movies
+response:You can watch too if you want to @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello me what kind of movies do you like ? like all movies , what are your suggestions ? Did you watch @ 205163 ? No heard it is very good can tell you to watch @ Yes it is really good love Adam Sandler movies
+response:You can watch too if you want to @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello me what kind of movies do you like ? like all movies , what are your suggestions ? Did you watch @ 205163 ? No heard it is very good can tell you to watch @ Yes it is really good love Adam Sandler movies You can watch too if you want to @ But that is a scary one i would recommend you @ Sounds scary but will have to check it out ! These are great suggestions
+response:And also @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello me what kind of movies do you like ? like all movies , what are your suggestions ? Did you watch @ 205163 ? No heard it is very good can tell you to watch @ Yes it is really good love Adam Sandler movies You can watch too if you want to @ But that is a scary one i would recommend you @ Sounds scary but will have to check it out ! These are great suggestions And also @ Thank you !
+response:Yes hope i have helped Good bye Enjoy them
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:What kind of movies do you like ? Hello i open to any movie
+response:have you seen @ 205163
+predict:
+====================================================================================================
+context:What kind of movies do you like ? Hello i open to any movie have you seen @ 205163 yes i liked that one actually i want to watch it again i also watch @
+response:or the @ 136632 was a goid one ot
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:What kind of movies do you like ? Hello i open to any movie have you seen @ 205163 yes i liked that one actually i want to watch it again i also watch @ or the @ 136632 was a goid one ot i watched @ the old one i have not seen the new one
+response:if you like scary movies @ is pretty scary
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:hi hello i am open to any movie Whatever you recommend i watched @ 205163 and i liked it i also liked @ i like movies made by Adan Sandler As Marvel movies too
+response:My fav movie is @ 183056
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:hi hello i am open to any movie Whatever you recommend i watched @ 205163 and i liked it i also liked @ i like movies made by Adan Sandler As Marvel movies too My fav movie is @ 183056 Do you mean @ 183056 ? i have not seen it but i will try i watched @ and i really liked
+response:@
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:hi hello i am open to any movie Whatever you recommend i watched @ 205163 and i liked it i also liked @ i like movies made by Adan Sandler As Marvel movies too My fav movie is @ 183056 Do you mean @ 183056 ? i have not seen it but i will try i watched @ and i really liked @ was good Yeah i enjoyed it thank you for helping me good bye
+response:Ok
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello
+response:hi
+predict:
+====================================================================================================
+context:Hello hi i 'm open to any movie What would you recommend me ? i liked @ 205163
+response:@ 183056 is my fav
+predict:
+====================================================================================================
+context:Hello hi i 'm open to any movie What would you recommend me ? i liked @ 205163 @ 183056 is my fav i also like scary movies i watched @ 183056
+response:how about @ 103896
+predict:
+====================================================================================================
+context:Hello hi i 'm open to any movie What would you recommend me ? i liked @ 205163 @ 183056 is my fav i also like scary movies i watched @ 183056 how about @ 103896 i also watched @ NO , i have not seen that one i guess i would try that one tomorrow i also watched @ 204794 the old one Which another one would you recommend me ?
+response:its by rob Zombie
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello hi i 'm open to any movie What would you recommend me ? i liked @ 205163 @ 183056 is my fav i also like scary movies i watched @ 183056 how about @ 103896 i also watched @ NO , i have not seen that one i guess i would try that one tomorrow i also watched @ 204794 the old one Which another one would you recommend me ? its by rob Zombie A funny one Like @ by Adan Sandler
+response:@
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello hi i 'm open to any movie What would you recommend me ? i liked @ 205163 @ 183056 is my fav i also like scary movies i watched @ 183056 how about @ 103896 i also watched @ NO , i have not seen that one i guess i would try that one tomorrow i also watched @ 204794 the old one Which another one would you recommend me ? its by rob Zombie A funny one Like @ by Adan Sandler @ could enjoyed so much No , i have not watched that one Thank you for helping me Good bye
+response:you 're the same person
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello hi i 'm open to any movie What would you recommend me ? i liked @ 205163 @ 183056 is my fav i also like scary movies i watched @ 183056 how about @ 103896 i also watched @ NO , i have not seen that one i guess i would try that one tomorrow i also watched @ 204794 the old one Which another one would you recommend me ? its by rob Zombie A funny one Like @ by Adan Sandler @ could enjoyed so much No , i have not watched that one Thank you for helping me Good bye you 're the same person Good bye
+response:lol
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello i would like to see any movie yo recommend me i am open to any movie
+response:Are you looking for something older or newer ?
+predict:
+====================================================================================================
+context:Hello i would like to see any movie yo recommend me i am open to any movie Are you looking for something older or newer ? i just watched @ 205163 and i liked it Whatever also like old movies Like @ i can not forget that movie i like scary movies too like @ 204794 the old one i have not seen @ the new one i 've heard is very good i do not know
+response:How about the The sixth Battalion ?
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello i would like to see any movie yo recommend me i am open to any movie Are you looking for something older or newer ? i just watched @ 205163 and i liked it Whatever also like old movies Like @ i can not forget that movie i like scary movies too like @ 204794 the old one i have not seen @ the new one i 've heard is very good i do not know How about the The sixth Battalion ? do you mean @ ? i have not seen it but it sounds awesome Well , thank you for helping me i 'll try that one
+response:Yes that is the movie suggest .
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello i would like to see any movie yo recommend me i am open to any movie Are you looking for something older or newer ? i just watched @ 205163 and i liked it Whatever also like old movies Like @ i can not forget that movie i like scary movies too like @ 204794 the old one i have not seen @ the new one i 've heard is very good i do not know How about the The sixth Battalion ? do you mean @ ? i have not seen it but it sounds awesome Well , thank you for helping me i 'll try that one Yes that is the movie suggest . good bye remember to say good bye
+response:Goodbye
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:like scary movies , can you make a suggestion ?
+response:Have you ever seen @
+predict:
+====================================================================================================
+context:like scary movies , can you make a suggestion ? Have you ever seen @ not yet is it good
+response:Yes very much so ! It is about paranormal activities but it was definitely scary
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:like scary movies , can you make a suggestion ? Have you ever seen @ not yet is it good Yes very much so ! It is about paranormal activities but it was definitely scary Can you make other paranoramal suggestions or slasher films like @ are good to
+response:was n't a big fan of @ have you seen
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:like scary movies , can you make a suggestion ? Have you ever seen @ not yet is it good Yes very much so ! It is about paranormal activities but it was definitely scary Can you make other paranoramal suggestions or slasher films like @ are good to was n't a big fan of @ have you seen that at all ? oh yes and the sequel @ These are good suggestions though thank you !
+response:absolutely , enjoy !
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:hello
+response:Hi , 'm looking for a good docutmentary
+predict:
+====================================================================================================
+context:hello Hi , 'm looking for a good docutmentary i 'm open to any movie
+response:any suggestions ?
+predict:
+====================================================================================================
+context:hello Hi , 'm looking for a good docutmentary i 'm open to any movie any suggestions ? Man , right now i 'm the seeker the person who is looking for movies so that means you are the person who recommend
+response:my apologies
+predict:
+====================================================================================================
+context:hello Hi , 'm looking for a good docutmentary i 'm open to any movie any suggestions ? Man , right now i 'm the seeker the person who is looking for movies so that means you are the person who recommend my apologies you can read that onto the chat Do n't worry man we are here to help So i 'm looking for any movies i watched @ and i liked it
+response:Have you seen @ 205163
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:hello Hi , 'm looking for a good docutmentary i 'm open to any movie any suggestions ? Man , right now i 'm the seeker the person who is looking for movies so that means you are the person who recommend my apologies you can read that onto the chat Do n't worry man we are here to help So i 'm looking for any movies i watched @ and i liked it Have you seen @ 205163 like movies made by Adan Sandler Yes and i liked it ! i also watched @ i like those kind of movies i watched @ 136632 and it was awesome
+response:My favorite Adam Sandler movie is definitely @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:hello Hi , 'm looking for a good docutmentary i 'm open to any movie any suggestions ? Man , right now i 'm the seeker the person who is looking for movies so that means you are the person who recommend my apologies you can read that onto the chat Do n't worry man we are here to help So i 'm looking for any movies i watched @ and i liked it Have you seen @ 205163 like movies made by Adan Sandler Yes and i liked it ! i also watched @ i like those kind of movies i watched @ 136632 and it was awesome My favorite Adam Sandler movie is definitely @ Remember to say good bye at the end of this chat And i wait for you
+response:thank you , good bye
+predict:
+====================================================================================================
+context:hello Hello , am looking for some movie recommendations . Do you have any Horror Movies that you could suggest for me ?
+response:do ! have you ever seen @
+predict:
+====================================================================================================
+context:hello Hello , am looking for some movie recommendations . Do you have any Horror Movies that you could suggest for me ? do ! have you ever seen @ ? have seen @ very much enjoyed this movie . When was younger liked movies like @ .
+response:liked that one too !
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:hello Hello , am looking for some movie recommendations . Do you have any Horror Movies that you could suggest for me ? do ! have you ever seen @ ? have seen @ very much enjoyed this movie . When was younger liked movies like @ . liked that one too ! also liked to watch the @ Series .
+response:loved that as well mainly because Johnny Depp is in it
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:hello Hello , am looking for some movie recommendations . Do you have any Horror Movies that you could suggest for me ? do ! have you ever seen @ ? have seen @ very much enjoyed this movie . When was younger liked movies like @ . liked that one too ! also liked to watch the @ Series . loved that as well mainly because Johnny Depp is in it love Johnny Depp ! So handsome , such a great actor . love johnny Depp in @ .
+response:Me too one of my favorites from him is @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:hello Hello , am looking for some movie recommendations . Do you have any Horror Movies that you could suggest for me ? do ! have you ever seen @ ? have seen @ very much enjoyed this movie . When was younger liked movies like @ . liked that one too ! also liked to watch the @ Series . loved that as well mainly because Johnny Depp is in it love Johnny Depp ! So handsome , such a great actor . love johnny Depp in @ . Me too one of my favorites from him is @
+response:It is very creepy and dark but full of suspense
+predict:
+====================================================================================================
+context:hello Hello , am looking for some movie recommendations . Do you have any Horror Movies that you could suggest for me ? do ! have you ever seen @ ? have seen @ very much enjoyed this movie . When was younger liked movies like @ . liked that one too ! also liked to watch the @ Series . loved that as well mainly because Johnny Depp is in it love Johnny Depp ! So handsome , such a great actor . love johnny Depp in @ . Me too one of my favorites from him is @
+response:own it ! actually have a poster still on my door from it , it was really good love a good Steven King movie
+predict:
+====================================================================================================
+context:hello Hello , am looking for some movie recommendations . Do you have any Horror Movies that you could suggest for me ? do ! have you ever seen @ ? have seen @ very much enjoyed this movie . When was younger liked movies like @ . liked that one too ! also liked to watch the @ Series . loved that as well mainly because Johnny Depp is in it love Johnny Depp ! So handsome , such a great actor . love johnny Depp in @ . Me too one of my favorites from him is @
+response:excellent ! hope you enjoy good bye
+predict:
+====================================================================================================
+context:Hello , am looking for some movie suggestions . What would you suggest ?
+response:Are you looking for movies currently in theatres ? like @ 205430 .
+predict:
+====================================================================================================
+context:Hello , am looking for some movie suggestions . What would you suggest ? Are you looking for movies currently in theatres ? like @ 205430 . want to have a movie night with friends . have not seen @ 205430 but think it looks really good . do love scary movies . One of the best scary movies have seen in recent years is @ , have you seen this one ?
+response:If you like recent scary movies , might suggest @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello , am looking for some movie suggestions . What would you suggest ? Are you looking for movies currently in theatres ? like @ 205430 . want to have a movie night with friends . have not seen @ 205430 but think it looks really good . do love scary movies . One of the best scary movies have seen in recent years is @ , have you seen this one ?
+response:If you like recent scary movies , might suggest @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello , am looking for some movie suggestions . What would you suggest ? Are you looking for movies currently in theatres ? like @ 205430 . want to have a movie night with friends . have not seen @ 205430 but think it looks really good . do love scary movies . One of the best scary movies have seen in recent years is @ , have you seen this one ?
+response:If you like recent scary movies , might suggest @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello , am looking for some movie suggestions . What would you suggest ? Are you looking for movies currently in theatres ? like @ 205430 . want to have a movie night with friends . have not seen @ 205430 but think it looks really good . do love scary movies . One of the best scary movies have seen in recent years is @ , have you seen this one ? If you like recent scary movies , might suggest @ . have not seen @ @ is a good suggestion for me have seen @ it was very good .
+response:enjoyed @
+predict:
+====================================================================================================
+context:Hello , am looking for some movie suggestions . What would you suggest ? Are you looking for movies currently in theatres ? like @ 205430 . want to have a movie night with friends . have not seen @ 205430 but think it looks really good . do love scary movies . One of the best scary movies have seen in recent years is @ , have you seen this one ? If you like recent scary movies , might suggest @ . have not seen @ @ is a good suggestion for me have seen @ it was very good .
+response:enjoyed @
+predict:
+====================================================================================================
+context:Hello , am looking for some movie suggestions . What would you suggest ? Are you looking for movies currently in theatres ? like @ 205430 . want to have a movie night with friends . have not seen @ 205430 but think it looks really good . do love scary movies . One of the best scary movies have seen in recent years is @ , have you seen this one ? If you like recent scary movies , might suggest @ . have not seen @ @ is a good suggestion for me have seen @ it was very good .
+response:enjoyed @
+predict:
+====================================================================================================
+context:Hello , am looking for some movie suggestions . What would you suggest ? Are you looking for movies currently in theatres ? like @ 205430 . want to have a movie night with friends . have not seen @ 205430 but think it looks really good . do love scary movies . One of the best scary movies have seen in recent years is @ , have you seen this one ? If you like recent scary movies , might suggest @ . have not seen @ @ is a good suggestion for me have seen @ it was very good .
+response:like @
+predict:
+====================================================================================================
+context:Hello , am looking for some movie suggestions . What would you suggest ? Are you looking for movies currently in theatres ? like @ 205430 . want to have a movie night with friends . have not seen @ 205430 but think it looks really good . do love scary movies . One of the best scary movies have seen in recent years is @ , have you seen this one ? If you like recent scary movies , might suggest @ . have not seen @ @ is a good suggestion for me have seen @ it was very good .
+response:Thanks , enjoy !
+predict:
+====================================================================================================
+context:Hello , what type of movies do you like ? whatever i just watched @ 205163 i really liked
+response:have not seen @ 205163
+predict:
+====================================================================================================
+context:Hello , what type of movies do you like ? whatever i just watched @ 205163 i really liked have not seen @ 205163 i also watched @ the new one i have not seen the old one @ 204794
+response:Have you seen @ 105589 ? would recommend it .
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello , what type of movies do you like ? whatever i just watched @ 205163 i really liked have not seen @ 205163 i also watched @ the new one i have not seen the old one @ 204794 Have you seen @ 105589 ? would recommend it . i also liked @ no , i have not seen i think i will try that one thank you for helping me
+response:saw @ . like @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello , what type of movies do you like ? whatever i just watched @ 205163 i really liked have not seen @ 205163 i also watched @ the new one i have not seen the old one @ 204794 Have you seen @ 105589 ? would recommend it . i also liked @ no , i have not seen i think i will try that one thank you for helping me
+response:saw @ . like @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello , what type of movies do you like ? whatever i just watched @ 205163 i really liked have not seen @ 205163 i also watched @ the new one i have not seen the old one @ 204794 Have you seen @ 105589 ? would recommend it . i also liked @ no , i have not seen i think i will try that one thank you for helping me saw @ . like @ good bye i 'll see you in another chat ; )
+response:Thanks !
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:hello Hi there ! 'm looking for bad campy movies like ... me and my boyfriend are having a competition Have you seen @ i liked that one but need something worse haha
+response:a classic that recommend is the movie the graduate , the soudtrank liked a lot 1967
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:hello Hi there ! 'm looking for bad campy movies like ... me and my boyfriend are having a competition Have you seen @ i liked that one but need something worse haha a classic that recommend is the movie the graduate , the soudtrank liked a lot 1967 That sounds good . could go with a classic . Have you seen @ 'm looking for a horrible movie . cheesy horror
+response:Tuesday 13 , you like ?
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:hello Hi there ! 'm looking for bad campy movies like ... me and my boyfriend are having a competition Have you seen @ i liked that one but need something worse haha a classic that recommend is the movie the graduate , the soudtrank liked a lot 1967 That sounds good . could go with a classic . Have you seen @ 'm looking for a horrible movie . cheesy horror Tuesday 13 , you like ? Of tuesday the 13th ? haha no , is it horrible ? 'll have to look it up Oh did you mean @ ? yeah i like it but i need something kinda not so scary just funny too you know
+response:scary movie is funny , liked it a lot
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:hello Hi there ! 'm looking for bad campy movies like ... me and my boyfriend are having a competition Have you seen @ i liked that one but need something worse haha a classic that recommend is the movie the graduate , the soudtrank liked a lot 1967 That sounds good . could go with a classic . Have you seen @ 'm looking for a horrible movie . cheesy horror Tuesday 13 , you like ? Of tuesday the 13th ? haha no , is it horrible ? 'll have to look it up Oh did you mean @ ? yeah i like it but i need something kinda not so scary just funny too you know scary movie is funny , liked it a lot think 'll go with @ he cant fight me on that one . And it has megan fox in it so he cant complain
+response:There are six movies , they are all fun
+predict:
+====================================================================================================
+context:Hello , have you seen the new IT movie ? have ! loved it .
+response:How about the Sixth Sense ? know it is older but it was good ?
+predict:
+====================================================================================================
+context:Hello , have you seen the new IT movie ? have ! loved it . How about the Sixth Sense ? know it is older but it was good ? feel like it was so much more intense than @ 204794
+response:agree it was more intense then It ( 1988 )
+predict:
+====================================================================================================
+context:Hello , have you seen the new IT movie ? have ! loved it . How about the Sixth Sense ? know it is older but it was good ? feel like it was so much more intense than @ 204794 agree it was more intense then It ( 1988 ) think 've seen the @ but its been ages ago
+response:What kind of movie are you looking for now ?
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello , have you seen the new IT movie ? have ! loved it . How about the Sixth Sense ? know it is older but it was good ? feel like it was so much more intense than @ 204794 agree it was more intense then It ( 1988 ) think 've seen the @ but its been ages ago What kind of movie are you looking for now ? just finished seeing @ 204974 and loved the action . But 'm all caught up on the marvel movies now .
+response:Might suggest you go back and watch the movie Sixth Sense since you can not remember if you saw it ?
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello , have you seen the new IT movie ? have ! loved it . How about the Sixth Sense ? know it is older but it was good ? feel like it was so much more intense than @ 204794 agree it was more intense then It ( 1988 ) think 've seen the @ but its been ages ago What kind of movie are you looking for now ? just finished seeing @ 204974 and loved the action . But 'm all caught up on the marvel movies now . Might suggest you go back and watch the movie Sixth Sense since you can not remember if you saw it ? think that would be an excellent idea , Bruce Willis is one of my favorite actors . Honestly , thinking about it now 'm pretty sure was thinking of @ earlier .
+response:love Bruce Willis too and can watch the movie over and over .
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello , have you seen the new IT movie ? have ! loved it . How about the Sixth Sense ? know it is older but it was good ? feel like it was so much more intense than @ 204794 agree it was more intense then It ( 1988 ) think 've seen the @ but its been ages ago What kind of movie are you looking for now ? just finished seeing @ 204974 and loved the action . But 'm all caught up on the marvel movies now . Might suggest you go back and watch the movie Sixth Sense since you can not remember if you saw it ? think that would be an excellent idea , Bruce Willis is one of my favorite actors . Honestly , thinking about it now 'm pretty sure was thinking of @ earlier . love Bruce Willis too and can watch the movie over and over . Right ! ? ca n't tell you how many times 've rewatched @
+response:Oh yes , one of my favorites . hope you enjoy Sixth Sense ( 1999 ) even if you have seen it .
+predict:
+====================================================================================================
+context:Hello , have you seen the new IT movie ? have ! loved it . How about the Sixth Sense ? know it is older but it was good ? feel like it was so much more intense than @ 204794 agree it was more intense then It ( 1988 ) think 've seen the @ but its been ages ago What kind of movie are you looking for now ? just finished seeing @ 204974 and loved the action . But 'm all caught up on the marvel movies now . Might suggest you go back and watch the movie Sixth Sense since you can not remember if you saw it ? think that would be an excellent idea , Bruce Willis is one of my favorite actors . Honestly , thinking about it now 'm pretty sure was thinking of @ earlier . love Bruce Willis too and can watch the movie over and over . Right ! ? ca n't tell you how many times 've rewatched @
+response:Great . Good bye my friend .
+predict:
+====================================================================================================
+context:Hello , heard that you are looking for a movie recommendation . What sort of movies are you into ? like comedies and movies that have really cool cinemotography like @ 125118 @ And i watched @ last night and it was pretty good
+response:have never seen either of those movies . do you like comedies like @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello , heard that you are looking for a movie recommendation . What sort of movies are you into ? like comedies and movies that have really cool cinemotography like @ 125118 @ And i watched @ last night and it was pretty good
+response:have never seen either of those movies . do you like comedies like @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello , heard that you are looking for a movie recommendation . What sort of movies are you into ? like comedies and movies that have really cool cinemotography like @ 125118 @ And i watched @ last night and it was pretty good have never seen either of those movies . do you like comedies like @ or something like @ . Yeah i like @ adam sandler is so silly i like absurdist humor
+response:Yes Adam Sandler has made so many great movies , even like his newer ones like @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello , heard that you are looking for a movie recommendation . What sort of movies are you into ? like comedies and movies that have really cool cinemotography like @ 125118 @ And i watched @ last night and it was pretty good have never seen either of those movies . do you like comedies like @ or something like @ . Yeah i like @ adam sandler is so silly i like absurdist humor
+response:Yes Adam Sandler has made so many great movies , even like his newer ones like @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello , heard that you are looking for a movie recommendation . What sort of movies are you into ? like comedies and movies that have really cool cinemotography like @ 125118 @ And i watched @ last night and it was pretty good have never seen either of those movies . do you like comedies like @ or something like @ . Yeah i like @ adam sandler is so silly i like absurdist humor Yes Adam Sandler has made so many great movies , even like his newer ones like @ and @
+response:love the movie @
+predict:@
+====================================================================================================
+context:Hello , heard that you are looking for a movie recommendation . What sort of movies are you into ? like comedies and movies that have really cool cinemotography like @ 125118 @ And i watched @ last night and it was pretty good have never seen either of those movies . do you like comedies like @ or something like @ . Yeah i like @ adam sandler is so silly i like absurdist humor Yes Adam Sandler has made so many great movies , even like his newer ones like @ and @
+response:Thank you ! Have a great day Good bye .
+predict:
+====================================================================================================
+context:Hello
+response:hello !
+predict:
+====================================================================================================
+context:Hello hello ! i 'm looking for any movie i just watched @ 205163 and i really liked i also watched @ it was a little scary
+response:i loved that movie actually haha .
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello hello ! i 'm looking for any movie i just watched @ 205163 and i really liked i also watched @ it was a little scary i loved that movie actually haha . but i think the old one @ 204794 was better so what would you recommend me ?
+response:wanted it in theaters and wow . just wanted @ 204334 haha thats as scary as i can go
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello hello ! i 'm looking for any movie i just watched @ 205163 and i really liked i also watched @ it was a little scary i loved that movie actually haha . but i think the old one @ 204794 was better so what would you recommend me ? wanted it in theaters and wow . just wanted @ 204334 haha thats as scary as i can go i have not seen it i think i will try
+response:@ is an awesome movie as well
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello hello ! i 'm looking for any movie i just watched @ 205163 and i really liked i also watched @ it was a little scary i loved that movie actually haha . but i think the old one @ 204794 was better so what would you recommend me ? wanted it in theaters and wow . just wanted @ 204334 haha thats as scary as i can go i have not seen it i think i will try @ is an awesome movie as well . love boxing movies i also watched @ and it was interesting i like too ! thank you for helping me remember to say good bye good bye ! ; ) i see you later in another chat or i hope
+response:Bye !
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello can you tell me what kind of movies you like best ? hello i 'm the seeker now you should recommend me any movie just watched @ 205163 and i liked
+response:could recommend @
+predict:@
+====================================================================================================
+context:Hello can you tell me what kind of movies you like best ? hello i 'm the seeker now you should recommend me any movie just watched @ 205163 and i liked could recommend @ . That 's great
+response:also enjoy classic horror movies like @ and @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello can you tell me what kind of movies you like best ? hello i 'm the seeker now you should recommend me any movie just watched @ 205163 and i liked could recommend @ . That 's great
+response:also enjoy classic horror movies like @ and @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello can you tell me what kind of movies you like best ? hello i 'm the seeker now you should recommend me any movie just watched @ 205163 and i liked could recommend @ . That 's great also enjoy classic horror movies like @ and @ i have not seen them but i could try them those sounds very interesting i just watched @ the new one Are those Scary movies too ?
+response:love @ and @ 204794 . Yes they
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello can you tell me what kind of movies you like best ? hello i 'm the seeker now you should recommend me any movie just watched @ 205163 and i liked could recommend @ . That 's great also enjoy classic horror movies like @ and @ i have not seen them but i could try them those sounds very interesting i just watched @ the new one Are those Scary movies too ? love @ and @ 204794 . Yes they are some classic scary movies . have n't watched it yet myself but have heard great things about @ 205430 . Thank you for helping me Remember to say good bye after this You should try them ; ) good bye
+response:You 're very welcome have a great day . Good bye
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Tell me what would you like to watch ? i just watched @ 205163 Have you seen it ? or do you like Scary movies ? have you ever seen @ ? like a lot of different movies . Thinking about some comedies something like @
+response:have you ever seen @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Tell me what would you like to watch ? i just watched @ 205163 Have you seen it ? or do you like Scary movies ? have you ever seen @ ? like a lot of different movies . Thinking about some comedies something like @ have you ever seen @ ? that 's is very interesting and funny you should try them Yes have seen that Movie it is very funny
+response:i also would recommend you @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Tell me what would you like to watch ? i just watched @ 205163 Have you seen it ? or do you like Scary movies ? have you ever seen @ ? like a lot of different movies . Thinking about some comedies something like @ have you ever seen @ ? that 's is very interesting and funny you should try them Yes have seen that Movie it is very funny i also would recommend you @ There are many of those movies any of them are really awesome also like @
+response:@
+predict:
+====================================================================================================
+context:hello am looking for a comedy movie .
+response:Tell what kind of movie would you like to watch ? did you watch @
+predict:
+====================================================================================================
+context:hello am looking for a comedy movie .
+response:Tell what kind of movie would you like to watch ? did you watch @
+predict:
+====================================================================================================
+context:hello am looking for a comedy movie . Tell what kind of movie would you like to watch ? did you watch @ ? i could recommend you @ yes , loved it . American
+response:i could recommend you too @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:hello am looking for a comedy movie . Tell what kind of movie would you like to watch ? did you watch @ ? i could recommend you @ yes , loved it . American i could recommend you too @ There are many of those movies Im not sure if i saw american pie 2 .
+response:Have you ever seen @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:hello am looking for a comedy movie . Tell what kind of movie would you like to watch ? did you watch @ ? i could recommend you @ yes , loved it . American i could recommend you too @ There are many of those movies Im not sure if i saw american pie 2 . Have you ever seen @ ? Well , you should try them scary movie was good . The first one atleast
+response:You should watch @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:hello am looking for a comedy movie . Tell what kind of movie would you like to watch ? did you watch @ ? i could recommend you @ yes , loved it . American i could recommend you too @ There are many of those movies Im not sure if i saw american pie 2 . Have you ever seen @ ? Well , you should try them scary movie was good . The first one atleast You should watch @
+response:Have a good evening and enjoy those movies good bye
+predict:
+====================================================================================================
+context:Hello i 'm open to any movie
+response:like old school horror movies like @ have you ever seen this one ?
+predict:
+====================================================================================================
+context:Hello i 'm open to any movie like old school horror movies like @ have you ever seen this one ? What would you recommend me ? i have not seen them ! i think i should try those movies
+response:The second one @ is
+predict:
+====================================================================================================
+context:Hello i 'm open to any movie like old school horror movies like @ have you ever seen this one ? What would you recommend me ? i have not seen them ! i think i should try those movies The second one @ is great too . i watched @ and it scared me
+response:love that movie .
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello i 'm open to any movie like old school horror movies like @ have you ever seen this one ? What would you recommend me ? i have not seen them ! i think i should try those movies The second one @ is great too . i watched @ and it scared me love that movie . so are there two movies ? haha , i would not say the same i enjoyed @ 204794 the old one i think the old one is better than the new one
+response:There are more than two , @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello i 'm open to any movie like old school horror movies like @ have you ever seen this one ? What would you recommend me ? i have not seen them ! i think i should try those movies The second one @ is great too . i watched @ and it scared me love that movie . so are there two movies ? haha , i would not say the same i enjoyed @ 204794 the old one i think the old one is better than the new one
+response:There are more than two , @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello i 'm open to any movie like old school horror movies like @ have you ever seen this one ? What would you recommend me ? i have not seen them ! i think i should try those movies The second one @ is great too . i watched @ and it scared me love that movie . so are there two movies ? haha , i would not say the same i enjoyed @ 204794 the old one i think the old one is better than the new one
+response:There are more than two , @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello i 'm open to any movie like old school horror movies like @ have you ever seen this one ? What would you recommend me ? i have not seen them ! i think i should try those movies The second one @ is great too . i watched @ and it scared me love that movie . so are there two movies ? haha , i would not say the same i enjoyed @ 204794 the old one i think the old one is better than the new one There are more than two , @ , @ , and @ .
+response:loved @ 204794 and thought the new one @
+predict:@
+====================================================================================================
+context:hello i 'm open to any movie
+response:Hi there . would like to suggest some comedies you could watch , have you seen @
+predict:
+====================================================================================================
+context:hello i 'm open to any movie Hi there . would like to suggest some comedies you could watch , have you seen @ ? i just watched @ 205163 and i liked it i have not seen it but i watched @ and it was great i also watched @
+response:It has Adam Sandler in it . like so many of his movies like @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:hello i 'm open to any movie Hi there . would like to suggest some comedies you could watch , have you seen @ ? i just watched @ 205163 and i liked it i have not seen it but i watched @ and it was great i also watched @
+response:It has Adam Sandler in it . like so many of his movies like @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:hello i 'm open to any movie Hi there . would like to suggest some comedies you could watch , have you seen @ ? i just watched @ 205163 and i liked it i have not seen it but i watched @ and it was great i also watched @
+response:It has Adam Sandler in it . like so many of his movies like @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:hello i 'm open to any movie Hi there . would like to suggest some comedies you could watch , have you seen @ ? i just watched @ 205163 and i liked it i have not seen it but i watched @ and it was great i also watched @ It has Adam Sandler in it . like so many of his movies like @ and @ and @
+response:did n't think the @ movies were that great always felt like the were super overrated .
+predict:
+====================================================================================================
+context:hello i 'm open to any movie Hi there . would like to suggest some comedies you could watch , have you seen @ ? i just watched @ 205163 and i liked it i have not seen it but i watched @ and it was great i also watched @ It has Adam Sandler in it . like so many of his movies like @ and @ and @
+response:'ve seen @
+predict:@
+====================================================================================================
+context:hello i 'm open to any movie Hi there . would like to suggest some comedies you could watch , have you seen @ ? i just watched @ 205163 and i liked it i have not seen it but i watched @ and it was great i also watched @ It has Adam Sandler in it . like so many of his movies like @ and @ and @
+response:You 're welcome . Have a great day , good bye .
+predict:
+====================================================================================================
+context:Hello what kind of movies would you recommend me to watched with my friends ?
+response:Hello , there is a movie that have always enjoyed and 'm not sure what you would call the genre but the movie is @
+predict:
+====================================================================================================
+context:Hello what kind of movies would you recommend me to watched with my friends ? Hello , there is a movie that have always enjoyed and 'm not sure what you would call the genre but the movie is @ have you ever seen this one ? i think funny movies would be great Yes i watched it ! it was really great !
+response:Well that one definitely is n't funny . How about @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello what kind of movies would you recommend me to watched with my friends ? Hello , there is a movie that have always enjoyed and 'm not sure what you would call the genre but the movie is @ have you ever seen this one ? i think funny movies would be great Yes i watched it ! it was really great ! Well that one definitely is n't funny . How about @ or another classic @ 177915 i watched @ i liked very much !
+response:like that movie too .
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello what kind of movies would you recommend me to watched with my friends ? Hello , there is a movie that have always enjoyed and 'm not sure what you would call the genre but the movie is @ have you ever seen this one ? i think funny movies would be great Yes i watched it ! it was really great ! Well that one definitely is n't funny . How about @ or another classic @ 177915 i watched @ i liked very much ! like that movie too . i have not seen that mive movie * sorry
+response:So funny and just ridiculous .
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello what kind of movies would you recommend me to watched with my friends ? Hello , there is a movie that have always enjoyed and 'm not sure what you would call the genre but the movie is @ have you ever seen this one ? i think funny movies would be great Yes i watched it ! it was really great ! Well that one definitely is n't funny . How about @ or another classic @ 177915 i watched @ i liked very much ! like that movie too . i have not seen that mive movie * sorry So funny and just ridiculous . yes and there is the another one @ i think i will try those movies
+response:really love Chris Farley 's movies @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello what kind of movies would you recommend me to watched with my friends ? Hello , there is a movie that have always enjoyed and 'm not sure what you would call the genre but the movie is @ have you ever seen this one ? i think funny movies would be great Yes i watched it ! it was really great ! Well that one definitely is n't funny . How about @ or another classic @ 177915 i watched @ i liked very much ! like that movie too . i have not seen that mive movie * sorry So funny and just ridiculous . yes and there is the another one @ i think i will try those movies really love Chris Farley 's movies @
+response:For sure you will definitely enjoy them and get a lot of laughs . Thank you , good bye/
+predict:
+====================================================================================================
+context:Hello Hello
+response:Tell me what kind of movies would you like to watch ? i just watched @ 205163
+predict:
+====================================================================================================
+context:Hello Hello Tell me what kind of movies would you like to watch ? i just watched @ 205163 like action movies like @
+response:really enjoyed it ! do you like marvel movies ?
+predict:
+====================================================================================================
+context:Hello Hello Tell me what kind of movies would you like to watch ? i just watched @ 205163 like action movies like @ really enjoyed it ! do you like marvel movies ? have n't seen that . It 's been a while since 've seen a brand new movie
+response:As @
+predict:
+====================================================================================================
+context:Hello Hello Tell me what kind of movies would you like to watch ? i just watched @ 205163 like action movies like @ really enjoyed it ! do you like marvel movies ? have n't seen that . It 's been a while since 've seen a brand new movie As @ ? 've never seen that one but will have to check it out .
+response:do you like that kind of movies ? what about @ 136632 ?
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello Hello Tell me what kind of movies would you like to watch ? i just watched @ 205163 like action movies like @ really enjoyed it ! do you like marvel movies ? have n't seen that . It 's been a while since 've seen a brand new movie As @ ? 've never seen that one but will have to check it out . do you like that kind of movies ? what about @ 136632 ? also loved @
+response:That 's really good You should try those Yes ! Batman has made a lot of good movies
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello Hello Tell me what kind of movies would you like to watch ? i just watched @ 205163 like action movies like @ really enjoyed it ! do you like marvel movies ? have n't seen that . It 's been a while since 've seen a brand new movie As @ ? 've never seen that one but will have to check it out . do you like that kind of movies ? what about @ 136632 ? also loved @ That 's really good You should try those Yes ! Batman has made a lot of good movies have n't seen that one either but 'll check it out . really loved @
+response:Well , i hope i have helped Enjoy your evening Good bye
+predict:
+====================================================================================================
+context:Have you seen the movie @ have seen it once , a long time ago . It was really good but it might be a little dated for me now .
+response:Yeah its a bit dated for shure What kind of movie genres do you like
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Have you seen the movie @ have seen it once , a long time ago . It was really good but it might be a little dated for me now . Yeah its a bit dated for shure What kind of movie genres do you like enjoy fantasy type movies , and goofy comedies . Any suggestions ?
+response:For me the best fantsy is @ 175843 Have you seen it
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Have you seen the movie @ have seen it once , a long time ago . It was really good but it might be a little dated for me now . Yeah its a bit dated for shure What kind of movie genres do you like enjoy fantasy type movies , and goofy comedies . Any suggestions ? For me the best fantsy is @ 175843 Have you seen it For example , @ and @ .
+response:Or @ very
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Have you seen the movie @ have seen it once , a long time ago . It was really good but it might be a little dated for me now . Yeah its a bit dated for shure What kind of movie genres do you like enjoy fantasy type movies , and goofy comedies . Any suggestions ? For me the best fantsy is @ 175843 Have you seen it For example , @ and @ . Or @ very funny comedy love @ 175843 , but @
+response:definitely the movie @
+predict:
+====================================================================================================
+context:Have you seen the movie @ have seen it once , a long time ago . It was really good but it might be a little dated for me now . Yeah its a bit dated for shure What kind of movie genres do you like enjoy fantasy type movies , and goofy comedies . Any suggestions ? For me the best fantsy is @ 175843 Have you seen it For example , @ and @ . Or @ very funny comedy love @ 175843 , but @
+response:Great , anytime !
+predict:
+====================================================================================================
+context:Have you seen the movie @ have seen it once , a long time ago . It was really good but it might be a little dated for me now . Yeah its a bit dated for shure What kind of movie genres do you like enjoy fantasy type movies , and goofy comedies . Any suggestions ? For me the best fantsy is @ 175843 Have you seen it For example , @ and @ . Or @ very funny comedy love @ 175843 , but @
+response:Bye
+predict:
+====================================================================================================
+context:Hello
+response:Hi ! Have you seen a good action movie lately ?
+predict:
+====================================================================================================
+context:Hello Hi ! Have you seen a good action movie lately ? It has been a while since 've seen any action films , though do like movies like @ . have always loved the idea of having some sort of power like they have .
+response:That is a great title . Loved it , If you have not seen it yet , highly recommend @
+predict:
+====================================================================================================
+context:Hello Hi ! Have you seen a good action movie lately ? It has been a while since 've seen any action films , though do like movies like @ . have always loved the idea of having some sort of power like they have . That is a great title . Loved it , If you have not seen it yet , highly recommend @ loved @ .
+response:It is action packed with great fight scenes . They do say there is no bond like one between a man and his dog .
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello Hi ! Have you seen a good action movie lately ? It has been a while since 've seen any action films , though do like movies like @ . have always loved the idea of having some sort of power like they have . That is a great title . Loved it , If you have not seen it yet , highly recommend @ loved @ . It is action packed with great fight scenes . They do say there is no bond like one between a man and his dog . am also like the movie @ . It is suspenseful , was on the
+response:have n't seen @
+predict:
+====================================================================================================
+context:Hello Hi ! Have you seen a good action movie lately ? It has been a while since 've seen any action films , though do like movies like @ . have always loved the idea of having some sort of power like they have . That is a great title . Loved it , If you have not seen it yet , highly recommend @ loved @ . It is action packed with great fight scenes . They do say there is no bond like one between a man and his dog . am also like the movie @ . It is suspenseful , was on the
+response:That is a great recommendation ! will have to check those out . If you 're into shooting movies , you should watch @
+predict:
+====================================================================================================
+context:Hello Hi ! Have you seen a good action movie lately ? It has been a while since 've seen any action films , though do like movies like @ . have always loved the idea of having some sort of power like they have . That is a great title . Loved it , If you have not seen it yet , highly recommend @ loved @ . It is action packed with great fight scenes . They do say there is no bond like one between a man and his dog . am also like the movie @ . It is suspenseful , was on the
+response:have yet see that one either . will definitely check it out . Thanks for the great suggestions . have got to go now .
+predict:
+====================================================================================================
+context:Hello , hear you are looking for movie recommendations . Do you have any sort of genre in mind ? Yes , 'd recommend psychological thrillers . Have you seen @ ?
+response:No have never seen that one . will have to check it out . Growing up always like movies like @ and
+predict:
+====================================================================================================
+context:Hello , hear you are looking for movie recommendations . Do you have any sort of genre in mind ? Yes , 'd recommend psychological thrillers . Have you seen @ ?
+response:No have never seen that one . will have to check it out . Growing up always like movies like @ and
+predict:@
+====================================================================================================
+context:Hello , hear you are looking for movie recommendations . Do you have any sort of genre in mind ? Yes , 'd recommend psychological thrillers . Have you seen @ ?
+response:No have never seen that one . will have to check it out . Growing up always like movies like @ and
+predict:@
+====================================================================================================
+context:Hello , hear you are looking for movie recommendations . Do you have any sort of genre in mind ? Yes , 'd recommend psychological thrillers . Have you seen @ ? No have never seen that one . will have to check it out . Growing up always like movies like @ and @ . As for newer movies really enjoyed @ . It was riveting . Those are classics . 'd like to see @ or the remake @ .
+response:have not seen the remake .
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello , hear you are looking for movie recommendations . Do you have any sort of genre in mind ? Yes , 'd recommend psychological thrillers . Have you seen @ ? No have never seen that one . will have to check it out . Growing up always like movies like @ and @ . As for newer movies really enjoyed @ . It was riveting . Those are classics . 'd like to see @ or the remake @ . have not seen the remake . Have you seen @ ?
+response:No have not seen that one either . guess have a few to look into . really liked @
+predict:
+====================================================================================================
+context:Hello , hear you are looking for movie recommendations . Do you have any sort of genre in mind ? Yes , 'd recommend psychological thrillers . Have you seen @ ? No have never seen that one . will have to check it out . Growing up always like movies like @ and @ . As for newer movies really enjoyed @ . It was riveting . Those are classics . 'd like to see @ or the remake @ . have not seen the remake . Have you seen @ ?
+response:Well you have a wonderful evening hope helped .
+predict:
+====================================================================================================
+context:Hello , hear you are looking for movie recommendations . Do you have any sort of genre in mind ? Yes , 'd recommend psychological thrillers . Have you seen @ ? No have never seen that one . will have to check it out . Growing up always like movies like @ and @ . As for newer movies really enjoyed @ . It was riveting . Those are classics . 'd like to see @ or the remake @ . have not seen the remake . Have you seen @ ?
+response:Thank you , good bye .
+predict:
+====================================================================================================
+context:Hello ! How are you ?
+response:Hi am good How are you
+predict:
+====================================================================================================
+context:Hello ! How are you ? Hi am good How are you 'm fine . Do you have any good suggestions for a good movie ?
+response:What kinds of movies do you like ? Do you like dramatic movies ?
+predict:
+====================================================================================================
+context:Hello ! How are you ? Hi am good How are you 'm fine . Do you have any good suggestions for a good movie ? What kinds of movies do you like ? Do you like dramatic movies ? love action and funny movies , so looking for something that combines the two ,
+response:Do you like @
+predict:
+====================================================================================================
+context:Hello ! How are you ? Hi am good How are you 'm fine . Do you have any good suggestions for a good movie ? What kinds of movies do you like ? Do you like dramatic movies ? love action and funny movies , so looking for something that combines the two ,
+response:Do you like @
+predict:
+====================================================================================================
+context:Hello ! How are you ? Hi am good How are you 'm fine . Do you have any good suggestions for a good movie ? What kinds of movies do you like ? Do you like dramatic movies ? love action and funny movies , so looking for something that combines the two , Do you like @ ? You may like @ . have heard about it , but have never seen it . What is it about ?
+response:@
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello ! How are you ? Hi am good How are you 'm fine . Do you have any good suggestions for a good movie ? What kinds of movies do you like ? Do you like dramatic movies ? love action and funny movies , so looking for something that combines the two , Do you like @ ? You may like @ . have heard about it , but have never seen it . What is it about ?
+response:@
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello ! How are you ? Hi am good How are you 'm fine . Do you have any good suggestions for a good movie ? What kinds of movies do you like ? Do you like dramatic movies ? love action and funny movies , so looking for something that combines the two , Do you like @ ? You may like @ . have heard about it , but have never seen it . What is it about ? @ is about two slackers that witness a murder . It is hilarious ! You might love @ ! That does so really funny . And that would be the perfect movie for today .
+response:That is full of action and comedy . The @ is a class too
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello ! How are you ? Hi am good How are you 'm fine . Do you have any good suggestions for a good movie ? What kinds of movies do you like ? Do you like dramatic movies ? love action and funny movies , so looking for something that combines the two , Do you like @ ? You may like @ . have heard about it , but have never seen it . What is it about ? @ is about two slackers that witness a murder . It is hilarious ! You might love @ ! That does so really funny . And that would be the perfect movie for today .
+response:That is full of action and comedy . The @ is a class too
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello ! How are you ? Hi am good How are you 'm fine . Do you have any good suggestions for a good movie ? What kinds of movies do you like ? Do you like dramatic movies ? love action and funny movies , so looking for something that combines the two , Do you like @ ? You may like @ . have heard about it , but have never seen it . What is it about ? @ is about two slackers that witness a murder . It is hilarious ! You might love @ ! That does so really funny . And that would be the perfect movie for today . That is full of action and comedy . The @
+response:You wo n't be disappointed . That sounds great . am so glad could help you find a great movie to watch .
+predict:
+====================================================================================================
+context:Hello ! How are you ? Hi am good How are you 'm fine . Do you have any good suggestions for a good movie ? What kinds of movies do you like ? Do you like dramatic movies ? love action and funny movies , so looking for something that combines the two , Do you like @ ? You may like @ . have heard about it , but have never seen it . What is it about ? @ is about two slackers that witness a murder . It is hilarious ! You might love @ ! That does so really funny . And that would be the perfect movie for today . That is full of action and comedy . The @
+response:You wo n't be disappointed . That sounds great . am so glad could help you find a great movie to watch .
+predict:
+====================================================================================================
+context:Hello ! How are you ? Hi am good How are you 'm fine . Do you have any good suggestions for a good movie ? What kinds of movies do you like ? Do you like dramatic movies ? love action and funny movies , so looking for something that combines the two , Do you like @ ? You may like @ . have heard about it , but have never seen it . What is it about ? @ is about two slackers that witness a murder . It is hilarious ! You might love @ ! That does so really funny . And that would be the perfect movie for today . That is full of action and comedy . The @
+response:You wo n't be disappointed . That sounds great . am so glad could help you find a great movie to watch .
+predict:
+====================================================================================================
+context:Hello ! How are you ? Hi ! Do you have a good movie for me ? like dramas . am great .
+response:Do you like classic dramas like Casablanca , or would you prefer something more recent ?
+predict:
+====================================================================================================
+context:Hello ! How are you ? Hi ! Do you have a good movie for me ? like dramas . am great . Do you like classic dramas like Casablanca , or would you prefer something more recent ? really likeI like @ a lot . love old movies . have seen @ . like @ too .
+response:If you like @ , you might enjoy @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello ! How are you ? Hi ! Do you have a good movie for me ? like dramas . am great . Do you like classic dramas like Casablanca , or would you prefer something more recent ? really likeI like @ a lot . love old movies . have seen @ . like @ too .
+response:If you like @ , you might enjoy @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello ! How are you ? Hi ! Do you have a good movie for me ? like dramas . am great . Do you like classic dramas like Casablanca , or would you prefer something more recent ? really likeI like @ a lot . love old movies . have seen @ . like @ too .
+response:If you like @ , you might enjoy @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello ! How are you ? Hi ! Do you have a good movie for me ? like dramas . am great . Do you like classic dramas like Casablanca , or would you prefer something more recent ? really likeI like @ a lot . love old movies . have seen @ . like @ too .
+response:If you like @ , you might enjoy @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello ! How are you ? Hi ! Do you have a good movie for me ? like dramas . am great . Do you like classic dramas like Casablanca , or would you prefer something more recent ? really likeI like @ a lot . love old movies . have seen @ . like @ too . If you like @ , you might enjoy @ or @ @ is another favorite old movie of mine , though it does n't have the same hard-boiled feel to it What
+response:In @
+predict:
+====================================================================================================
+context:Hello ! How are you ? Hi ! Do you have a good movie for me ? like dramas . am great . Do you like classic dramas like Casablanca , or would you prefer something more recent ? really likeI like @ a lot . love old movies . have seen @ . like @ too . If you like @ , you might enjoy @ or @ @ is another favorite old movie of mine , though it does n't have the same hard-boiled feel to it What
+response:Have a good day !
+predict:
+====================================================================================================
+context:Hi ! How are you ? am looking for a funny movie . Can you . help me ? really like @ . like comedies that have a little romance in them .
+response:Hi 'm great thanks , how are you ?
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hi ! How are you ? am looking for a funny movie . Can you . help me ? really like @ . like comedies that have a little romance in them . Hi 'm great thanks , how are you ? am great . It 's a nice day . also really like @ . like @ too . hope you can help by just suggesting one movie .
+response:@
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hi ! How are you ? am looking for a funny movie . Can you . help me ? really like @ . like comedies that have a little romance in them . Hi 'm great thanks , how are you ? am great . It 's a nice day . also really like @ . like @ too . hope you can help by just suggesting one movie .
+response:@
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hi ! How are you ? am looking for a funny movie . Can you . help me ? really like @ . like comedies that have a little romance in them . Hi 'm great thanks , how are you ? am great . It 's a nice day . also really like @ . like @ too . hope you can help by just suggesting one movie .
+response:@
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hi ! How are you ? am looking for a funny movie . Can you . help me ? really like @ . like comedies that have a little romance in them . Hi 'm great thanks , how are you ? am great . It 's a nice day . also really like @ . like @ too . hope you can help by just suggesting one movie .
+response:@
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hi ! How are you ? am looking for a funny movie . Can you . help me ? really like @ . like comedies that have a little romance in them . Hi 'm great thanks , how are you ? am great . It 's a nice day . also really like @ . like @ too . hope you can help by just suggesting one movie . @ ething About Mary is a great movie , very funny . Have you seen @ ? also like @
+response:It has Drew Barrymore and Adam Sandler starring , it 's a romantic comedy so you would like it
+predict:
+====================================================================================================
+context:Hi ! How are you ? It is so great to be paired with you .
+response:Hey good thanks and you ?
+predict:
+====================================================================================================
+context:Hi ! How are you ? It is so great to be paired with you . Hey good thanks and you ? am great .
+response:What kind of movies do you like ? love horrors !
+predict:
+====================================================================================================
+context:Hi ! How are you ? It is so great to be paired with you . Hey good thanks and you ? am great . What kind of movies do you like ? love horrors ! really love superhero movies like @ and @ 111429 . Can you suggest a couple superhero movies for me to watch tonight ?
+response:That 's great my brother also likes those movies so can recommend some for you
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hi ! How are you ? It is so great to be paired with you . Hey good thanks and you ? am great . What kind of movies do you like ? love horrors ! really love superhero movies like @ and @ 111429 . Can you suggest a couple superhero movies for me to watch tonight ? That 's great my brother also likes those movies so can recommend some for you Awesome .
+response:Have you seen @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hi ! How are you ? It is so great to be paired with you . Hey good thanks and you ? am great . What kind of movies do you like ? love horrors ! really love superhero movies like @ and @ 111429 . Can you suggest a couple superhero movies for me to watch tonight ? That 's great my brother also likes those movies so can recommend some for you Awesome . Have you seen @ No have not seen @ . know people that really like it . will have to watch it . do really like
+response:Also @
+predict:@
+====================================================================================================
+context:Hi ! How are you ? It is so great to be paired with you . Hey good thanks and you ? am great . What kind of movies do you like ? love horrors ! really love superhero movies like @ and @ 111429 . Can you suggest a couple superhero movies for me to watch tonight ? That 's great my brother also likes those movies so can recommend some for you Awesome . Have you seen @ No have not seen @ . know people that really like it . will have to watch it . do really like
+response:Yeh Spiderman is a great movie
+predict:
+====================================================================================================
+context:Hi ! How are you ? It is so great to be paired with you . Hey good thanks and you ? am great . What kind of movies do you like ? love horrors ! really love superhero movies like @ and @ 111429 . Can you suggest a couple superhero movies for me to watch tonight ? That 's great my brother also likes those movies so can recommend some for you Awesome . Have you seen @ No have not seen @ . know people that really like it . will have to watch it . do really like
+response:No problem enjoy your movies , bye
+predict:
+====================================================================================================
+context:Hey how are you ? Hi ! How are you today ?
+response:'m great thanks , What kind of movies do you like ?
+predict:
+====================================================================================================
+context:Hey how are you ? Hi ! How are you today ? 'm great thanks , What kind of movies do you like ? am hoping you can help me find a movie about gangsters , like @ . love that movie . also really like @ . Anything related to the mob interests me .
+response:They are great movies , have you seen @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hey how are you ? Hi ! How are you today ? 'm great thanks , What kind of movies do you like ? am hoping you can help me find a movie about gangsters , like @ . love that movie . also really like @ . Anything related to the mob interests me . They are great movies , have you seen @ have not seen it , what is it about ? Is it like the @ ?
+response:It 's based on 1970 's in New York
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hey how are you ? Hi ! How are you today ? 'm great thanks , What kind of movies do you like ? am hoping you can help me find a movie about gangsters , like @ . love that movie . also really like @ . Anything related to the mob interests me . They are great movies , have you seen @ have not seen it , what is it about ? Is it like the @ ? It 's based on 1970 's in New York Oh , cool . That sounds like something would like for sure
+response:Also @ is a film you might enjoy
+predict:@
+====================================================================================================
+context:Hey how are you ? Hi ! How are you today ? 'm great thanks , What kind of movies do you like ? am hoping you can help me find a movie about gangsters , like @ . love that movie . also really like @ . Anything related to the mob interests me . They are great movies , have you seen @ have not seen it , what is it about ? Is it like the @ ? It 's based on 1970 's in New York Oh , cool . That sounds like something would like for sure
+response:No problem , enjoy
+predict:
+====================================================================================================
+context:Hey how are you ? Hi ! How are you ? am great .
+response:Good thanks , what kind of movies do you like ?
+predict:
+====================================================================================================
+context:Hey how are you ? Hi ! How are you ? am great . Good thanks , what kind of movies do you like ? really loved @ 204974 . love adventure movies .
+response:That 's great it 's a great movies . Have you seen @ 205698
+predict:
+====================================================================================================
+context:Hey how are you ? Hi ! How are you ? am great . Good thanks , what kind of movies do you like ? really loved @ 204974 . love adventure movies . That 's great it 's a great movies . Have you seen @ 205698 like stuff like @ .
+response:have't seen Jurassic Park
+predict:
+====================================================================================================
+context:Hey how are you ? Hi ! How are you ? am great . Good thanks , what kind of movies do you like ? really loved @ 204974 . love adventure movies . That 's great it 's a great movies . Have you seen @ 205698 like stuff like @ . have't seen Jurassic Park Oh , you know what , have n't seen that . What is it about ? Is it like @ ?
+response:Have you seen @ 205163
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hey how are you ? Hi ! How are you ? am great . Good thanks , what kind of movies do you like ? really loved @ 204974 . love adventure movies . That 's great it 's a great movies . Have you seen @ 205698 like stuff like @ . have't seen Jurassic Park Oh , you know what , have n't seen that . What is it about ? Is it like @ ? Have you seen @ 205163 @ is good . No , have n't seen @ 205163 . My friends love it though .
+response:It is the best marvel film so far
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hey how are you ? Hi ! How are you ? am great . Good thanks , what kind of movies do you like ? really loved @ 204974 . love adventure movies . That 's great it 's a great movies . Have you seen @ 205698 like stuff like @ . have't seen Jurassic Park Oh , you know what , have n't seen that . What is it about ? Is it like @ ? Have you seen @ 205163 @ is good . No , have n't seen @ 205163 . My friends love it though . It is the best marvel film so far Thanks a ton for the recommendations . will totally watch those !
+response:No problem , enjoy and goodbye
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hey how are you ? Hey ! am great . How are you ?
+response:'m great thanks , what kind of movies do you like ?
+predict:
+====================================================================================================
+context:Hey how are you ? Hey ! am great . How are you ? 'm great thanks , what kind of movies do you like ? really love Disney movies . love @ and @ .
+response:Awesome , have you tried the new @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hey how are you ? Hey ! am great . How are you ? 'm great thanks , what kind of movies do you like ? really love Disney movies . love @ and @ . Awesome , have you tried the new @ have n't seen all of them though .
+response:Those are great movies
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hey how are you ? Hey ! am great . How are you ? 'm great thanks , what kind of movies do you like ? really love Disney movies . love @ and @ . Awesome , have you tried the new @ have n't seen all of them though . Those are great movies Oh , the new one ?
+response:Yeh it 's a great film
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hey how are you ? Hey ! am great . How are you ? 'm great thanks , what kind of movies do you like ? really love Disney movies . love @ and @ . Awesome , have you tried the new @ have n't seen all of them though . Those are great movies Oh , the new one ? Yeh it 's a great film With the girl from @ ? have to watch that !
+response:Yeh that 's the one she is a great actress
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hey how are you ? Hey ! am great . How are you ? 'm great thanks , what kind of movies do you like ? really love Disney movies . love @ and @ . Awesome , have you tried the new @ have n't seen all of them though . Those are great movies Oh , the new one ? Yeh it 's a great film With the girl from @ ? have to watch that ! Yeh that 's the one she is a great actress That is a great idea . did n't even think of that . Thanks a lot !
+response:Have you seen @ it
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hey how are you ? Hey ! am great . How are you ? 'm great thanks , what kind of movies do you like ? really love Disney movies . love @ and @ . Awesome , have you tried the new @ have n't seen all of them though . Those are great movies Oh , the new one ? Yeh it 's a great film With the girl from @ ? have to watch that ! Yeh that 's the one she is a great actress That is a great idea . did n't even think of that . Thanks a lot ! Have you seen @ it 's a classic
+response:No problem , enjoy and goodbye
+predict:
+====================================================================================================
+context:Hello am looking for some suggestions for an upcoming movie night with firends .
+response:What kinds of movies have you liked before with this group of friends ?
+predict:
+====================================================================================================
+context:Hello am looking for some suggestions for an upcoming movie night with firends . What kinds of movies have you liked before with this group of friends ? When was younger loved watching @
+response:Do your friends also like scary movies ?
+predict:
+====================================================================================================
+context:Hello am looking for some suggestions for an upcoming movie night with firends . What kinds of movies have you liked before with this group of friends ? When was younger loved watching @ Do your friends also like scary movies ? And more recently have enjoyed @ . am not sure of all of their preferences was thinking maybe to have a couple different genres .
+response:Would @ be a good horror choice ?
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello am looking for some suggestions for an upcoming movie night with firends . What kinds of movies have you liked before with this group of friends ? When was younger loved watching @ Do your friends also like scary movies ? And more recently have enjoyed @ . am not sure of all of their preferences was thinking maybe to have a couple different genres . Would @ be a good horror choice ? Oh have seen that one too . It was wuite good , surprised by the ending . Sorry mean Quite
+response:would also say @ could be a good film for a group of people . Funny
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello am looking for some suggestions for an upcoming movie night with firends . What kinds of movies have you liked before with this group of friends ? When was younger loved watching @ Do your friends also like scary movies ? And more recently have enjoyed @ . am not sure of all of their preferences was thinking maybe to have a couple different genres . Would @ be a good horror choice ? Oh have seen that one too . It was wuite good , surprised by the ending . Sorry mean Quite would also say @ could be a good film for a group of people . Funny and with action involved . Lots of super hero movies right now love @ and think you are right that will be a great movie to watch with friends . What about a comedy ? always liked @
+response:We are a big fan of @
+predict:
+====================================================================================================
+context:Hello am looking for some suggestions for an upcoming movie night with firends . What kinds of movies have you liked before with this group of friends ? When was younger loved watching @ Do your friends also like scary movies ? And more recently have enjoyed @ . am not sure of all of their preferences was thinking maybe to have a couple different genres . Would @ be a good horror choice ? Oh have seen that one too . It was wuite good , surprised by the ending . Sorry mean Quite would also say @ could be a good film for a group of people . Funny and with action involved . Lots of super hero movies right now love @ and think you are right that will be a great movie to watch with friends . What about a comedy ? always liked @
+response:We are a big fan of @
+predict:
+====================================================================================================
+context:Hello am looking for some suggestions for an upcoming movie night with firends . What kinds of movies have you liked before with this group of friends ? When was younger loved watching @ Do your friends also like scary movies ? And more recently have enjoyed @ . am not sure of all of their preferences was thinking maybe to have a couple different genres . Would @ be a good horror choice ? Oh have seen that one too . It was wuite good , surprised by the ending . Sorry mean Quite would also say @ could be a good film for a group of people . Funny and with action involved . Lots of super hero movies right now love @ and think you are right that will be a great movie to watch with friends . What about a comedy ? always liked @
+response:Good luck ! hope your friends enjoy the choices
+predict:
+====================================================================================================
+context:Hello ! What kind of movie are you looking for today ? Hello guess am not sure what am looking for . Do you know of any good romance movies ?
+response:love @ . Its an older fairy
+predict:
+====================================================================================================
+context:Hello ! What kind of movie are you looking for today ? Hello guess am not sure what am looking for . Do you know of any good romance movies ?
+response:love @ . Its an older fairy
+predict:
+====================================================================================================
+context:Hello ! What kind of movie are you looking for today ? Hello guess am not sure what am looking for . Do you know of any good romance movies ? love @ . Its an older fairy tale romance with Drew Barrmore @ is also a good action adventure romance . 've never really watched these types of movies and do n't know where to start . have n't seen either of these will have to check them out .
+response:What else would you like in the movie ? comedy , fairy tales ?
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello ! What kind of movie are you looking for today ? Hello guess am not sure what am looking for . Do you know of any good romance movies ? love @ . Its an older fairy tale romance with Drew Barrmore @ is also a good action adventure romance . 've never really watched these types of movies and do n't know where to start . have n't seen either of these will have to check them out . What else would you like in the movie ? comedy , fairy tales ? always like @ think that is the name of it .
+response:What movies outs die of the romance genre do you like ?
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello ! What kind of movie are you looking for today ? Hello guess am not sure what am looking for . Do you know of any good romance movies ? love @ . Its an older fairy tale romance with Drew Barrmore @ is also a good action adventure romance . 've never really watched these types of movies and do n't know where to start . have n't seen either of these will have to check them out . What else would you like in the movie ? comedy , fairy tales ? always like @ think that is the name of it . What movies outs die of the romance genre do you like ? And not really that romantic but
+response:So @
+predict:
+====================================================================================================
+context:Hello ! What kind of movie are you looking for today ? Hello guess am not sure what am looking for . Do you know of any good romance movies ? love @ . Its an older fairy tale romance with Drew Barrmore @ is also a good action adventure romance . 've never really watched these types of movies and do n't know where to start . have n't seen either of these will have to check them out . What else would you like in the movie ? comedy , fairy tales ? always like @ think that is the name of it . What movies outs die of the romance genre do you like ? And not really that romantic but
+response:Have you seen @ 166069 ? Some romance and action
+predict:
+====================================================================================================
+context:Hello ! What kind of movie are you looking for today ? Hello guess am not sure what am looking for . Do you know of any good romance movies ? love @ . Its an older fairy tale romance with Drew Barrmore @ is also a good action adventure romance . 've never really watched these types of movies and do n't know where to start . have n't seen either of these will have to check them out . What else would you like in the movie ? comedy , fairy tales ? always like @ think that is the name of it . What movies outs die of the romance genre do you like ? And not really that romantic but
+response:Did you like the scifi aspect of @
+predict:
+====================================================================================================
+context:Hello what kind of movies are you looking for ? Hi , love musicals and am looking for some new ones ! @ is a current favorite
+response:am not sure that know many musicals . have never seen @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello what kind of movies are you looking for ? Hi , love musicals and am looking for some new ones ! @ is a current favorite
+response:am not sure that know many musicals . have never seen @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello what kind of movies are you looking for ? Hi , love musicals and am looking for some new ones ! @ is a current favorite am not sure that know many musicals . have never seen @ . have seen @ as a child . also enjoy @ have seen Annie but it was sort of meh
+response:have n't seen that one either . If anything am a horror fan all the way . grew up watching @ and @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello what kind of movies are you looking for ? Hi , love musicals and am looking for some new ones ! @ is a current favorite am not sure that know many musicals . have never seen @ . have seen @ as a child . also enjoy @ have seen Annie but it was sort of meh
+response:have n't seen that one either . If anything am a horror fan all the way . grew up watching @ and @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hello what kind of movies are you looking for ? Hi , love musicals and am looking for some new ones ! @ is a current favorite am not sure that know many musicals . have never seen @ . have seen @ as a child . also enjoy @ have seen Annie but it was sort of meh have n't seen that one either . If anything am a horror fan all the way . grew up watching @
+response:like that scared to the couch feeling , though sometimes have to follow up my horror movies with a great comedy . Something like @
+predict:@
+====================================================================================================
+context:Hello what kind of movies are you looking for ? Hi , love musicals and am looking for some new ones ! @ is a current favorite am not sure that know many musicals . have never seen @ . have seen @ as a child . also enjoy @ have seen Annie but it was sort of meh have n't seen that one either . If anything am a horror fan all the way . grew up watching @
+response:love @
+predict:@
+====================================================================================================
+context:Hello what kind of movies are you looking for ? Hi , love musicals and am looking for some new ones ! @ is a current favorite am not sure that know many musicals . have never seen @ . have seen @ as a child . also enjoy @ have seen Annie but it was sort of meh have n't seen that one either . If anything am a horror fan all the way . grew up watching @
+response:love @
+predict:
+====================================================================================================
+context:Hello what kind of movies are you looking for ? Hi , love musicals and am looking for some new ones ! @ is a current favorite am not sure that know many musicals . have never seen @ . have seen @ as a child . also enjoy @ have seen Annie but it was sort of meh have n't seen that one either . If anything am a horror fan all the way . grew up watching @
+response:love @
+predict:@
+====================================================================================================
+context:Hello what kind of movies are you looking for ? Hi , love musicals and am looking for some new ones ! @ is a current favorite am not sure that know many musicals . have never seen @ . have seen @ as a child . also enjoy @ have seen Annie but it was sort of meh have n't seen that one either . If anything am a horror fan all the way . grew up watching @
+response:Thank you too . You have a great day , good bye .
+predict:
+====================================================================================================
+context:Hi there are you interested in some classic comedies ? am actually looking for movies for my 12 yr olds sleepover
+response:There is a movie called @ 177915 and it is absolutely hilarious . Well @ 177915 is family friendly could do better am sure .
+predict:
+====================================================================================================
+context:Hi there are you interested in some classic comedies ? am actually looking for movies for my 12 yr olds sleepover
+response:There is a movie called @ 177915 and it is absolutely hilarious . Well @ 177915 is family friendly could do better am sure .
+predict:
+====================================================================================================
+context:Hi there are you interested in some classic comedies ? am actually looking for movies for my 12 yr olds sleepover There is a movie called @ 177915 and it is absolutely hilarious . Well @ 177915 is family friendly could do better am sure . How abut @ and @ dont think the kids would be interested in a movie that old . Hunger Games they have seen and love
+response:Well how about @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hi there are you interested in some classic comedies ? am actually looking for movies for my 12 yr olds sleepover There is a movie called @ 177915 and it is absolutely hilarious . Well @ 177915 is family friendly could do better am sure . How abut @ and @ dont think the kids would be interested in a movie that old . Hunger Games they have seen and love Well how about @ . They really liked @ when showed that to them and @ could be good too
+response:could also suggest @
+predict:@ @ @ @ @ @ @ @ @ @ @ @ @ @ @
+====================================================================================================
+context:Hi there are you interested in some classic comedies ? am actually looking for movies for my 12 yr olds sleepover There is a movie called @ 177915 and it is absolutely hilarious . Well @ 177915 is family friendly could do better am sure . How abut @ and @ dont think the kids would be interested in a movie that old . Hunger Games they have seen and love Well how about @ . They really liked @ when showed that to them and @ could be good too
+response:or the newest one believe is @ 181715 .
+predict:
+====================================================================================================
+context:Hi there are you interested in some classic comedies ? am actually looking for movies for my 12 yr olds sleepover There is a movie called @ 177915 and it is absolutely hilarious . Well @ 177915 is family friendly could do better am sure . How abut @ and @ dont think the kids would be interested in a movie that old . Hunger Games they have seen and love Well how about @ . They really liked @ when showed that to them and @ could be good too
+response:sounds good . You have a great day . Thank you and good bye .
+predict:
+====================================================================================================
+context:Hello , are you a movie buff ?
+response:Hi , guess could say yes from the ridiculous stack of movies : ) you ?
+predict:

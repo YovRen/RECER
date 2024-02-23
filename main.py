@@ -15,11 +15,11 @@ warnings.filterwarnings("ignore")
 class TrainLoop():
     def __init__(self):
         self.crs_data_path = "data_crs"
-        self.batch_size = 2
+        self.batch_size = 64
         self.learningrate = 0.001
         self.gradient_clip = 0.1
         self.optimizer = 'adam'
-        self.device = 'cpu'
+        self.device = 'cuda'
         self.n_user = 1075
         self.n_concept = 29308
         self.n_mood = 10
@@ -52,20 +52,20 @@ class TrainLoop():
         self.word2wordEmb = np.load(self.crs_data_path + '/redial_word2wordEmb.npy')
         self.special_wordIdx = {'<pad>':0, '<dbpedia>':1, '<concept>':2, '<unk>':3, '<split>':4, '<user>':5, '<movie>':6, '<mood>':7, '<eos>':8, '<related>':9, '<relation>':10}
         self.vocab_size = len(self.word2wordIdx)+len(self.special_wordIdx)
-        self.train_dataset = CRSDataset('train', self)
-        self.valid_dataset = CRSDataset('data', self)
-        self.test_dataset = CRSDataset('data', self)
+        self.train_dataset = CRSDataset('toy_train', self)
+        self.valid_dataset = CRSDataset('toy_valid', self)
+        self.test_dataset = CRSDataset('toy_test', self)
         self.dbpedia_edge_list = self.train_dataset.dbpedia_edge_list.to(self.device)
         self.concept_edge_sets = self.train_dataset.concept_edge_sets.to(self.device)
         self.train_dataloader = DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=False, drop_last=True)
         self.test_dataloader = DataLoader(self.test_dataset, batch_size=self.batch_size, shuffle=False, drop_last=True)
         self.valid_dataloader = DataLoader(self.valid_dataset, batch_size=self.batch_size, shuffle=False, drop_last=True)
         self.metrics_rec = {"rec_loss":0,"recall@1":0,"recall@10":0,"recall@50":0,"count":0}
-        self.metrics_gen = {"gen_loss":0,"ppl":0,"bleu1":0,"bleu2":0,"bleu3":0,"bleu4":0,"dist1":0,"dist2":0,"dist3":0,"dist4":0,"usr":0,"usn":0, "count":0}
+        self.metrics_gen = {"gen_loss":0,"ppl":0,"bleu1":0,"bleu2":0,"bleu3":0,"bleu4":0,"dist1":0,"dist2":0,"dist3":0,"dist4":0, "count":0}
         self.model = Bert4KGModel(self).to(self.device)
         self.optimizer = {k.lower(): v for k, v in torch.optim.__dict__.items() if not k.startswith('__') and k[0].isupper()}[self.optimizer]([p for p in self.model.parameters() if p.requires_grad], lr=self.learningrate,amsgrad=True,betas=(0.9,0.999))
 
-    def train(self, rec_epoch, gen_epoch, freeze):
+    def train(self, rec_epoch, gen_epoch):
         best_val = 10000
         for i in range(rec_epoch+gen_epoch):
             self.model.train()
@@ -116,7 +116,7 @@ class TrainLoop():
     def val(self,is_test=False):
         self.model.eval()
         self.metrics_rec = {"rec_loss":0,"recall@1":0,"recall@10":0,"recall@50":0,"rec2_loss":0,"recall2@1":0,"recall2@10":0,"recall2@50":0,"count":0}
-        self.metrics_gen = {"gen_loss":0,"ppl":0,"bleu1":0,"bleu2":0,"bleu3":0,"bleu4":0,"dist1":0,"dist2":0,"dist3":0,"dist4":0,"usr":0,"usn":0, "count":0}
+        self.metrics_gen = {"gen_loss":0,"ppl":0,"bleu1":0,"bleu2":0,"bleu3":0,"bleu4":0,"dist1":0,"dist2":0,"dist3":0,"dist4":0, "count":0}
         def vector2sentence(batch_sen):
             sentences = []
             for sen in batch_sen.numpy().tolist():
@@ -153,6 +153,7 @@ class TrainLoop():
                 self.metrics_rec["recall2@10"] += int(target_idx in pred2_idx[b][:10].tolist())
                 self.metrics_rec["recall2@50"] += int(target_idx in pred2_idx[b][:50].tolist())
                 self.metrics_rec["count"] += 1
+            print(vector2sentence(predict_vector.cpu()))
             tokens_response.extend(vector2sentence(response_vector.cpu()))
             tokens_predict.extend(vector2sentence(predict_vector.cpu()))
             tokens_context.extend(vector2sentence(context_vector.cpu()))
@@ -191,11 +192,6 @@ class TrainLoop():
         self.metrics_gen['dist2'] = len(bigram_set) / len(tokens_predict)#bigram_count
         self.metrics_gen['dist3'] = len(trigram_set)/len(tokens_predict)#trigram_count
         self.metrics_gen['dist4'] = len(quagram_set)/len(tokens_predict)#quagram_count
-        self.metrics_gen['usr'], self.metrics_gen['usn'] = unique_sentence_percent(tokens_predict)
-        text_response = [' '.join(tokens) for tokens in tokens_response]
-        text_predict = [' '.join(tokens) for tokens in tokens_predict]
-        text_context = [' '.join(tokens) for tokens in tokens_context]
-        self.metrics_gen['usr'], self.metrics_gen['usn'] = unique_sentence_percent(tokens_predict)
         text_response = [' '.join(tokens) for tokens in tokens_response]
         text_predict = [' '.join(tokens) for tokens in tokens_predict]
         text_context = [' '.join(tokens) for tokens in tokens_context]
@@ -205,7 +201,7 @@ class TrainLoop():
                 file.writelines("context:"+context+'\n')
                 file.writelines("response:"+response+'\n')
                 file.writelines("predict:"+predict+'\n')
-        self.metrics_rec = {key: self.metrics_rec[key] / self.metrics_rec['count'] for key in self.metrics_rec}
+        self.metrics_rec = {key: self.metrics_rec[key] / self.metrics_gen['count'] if 'loss' in key else self.metrics_rec[key] / self.metrics_rec['count'] for key in self.metrics_rec}
         self.metrics_gen = {key: self.metrics_gen[key] if 'dist' in key else self.metrics_gen[key]/self.metrics_gen['count'] for key in self.metrics_gen}
         self.metrics_gen['ppl'] = math.exp(self.metrics_gen['gen_loss'])
         print(self.metrics_rec)
@@ -215,5 +211,6 @@ class TrainLoop():
 
 if __name__ == '__main__':
     loop = TrainLoop()
-    loop.train(rec_epoch=1,gen_epoch=1,freeze=False)
+    loop.model.load_model('gen')
+    loop.train(rec_epoch=0,gen_epoch=1)
     met = loop.val(is_test = True)

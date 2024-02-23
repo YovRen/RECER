@@ -144,8 +144,7 @@ class TransformerDecoder4KGLayer(nn.Module):
         self.ffn = TransformerFFN(embedding_size, ffn_size, relu_dropout=relu_dropout)
         self.norm3 = nn.LayerNorm(embedding_size)
 
-    def forward(self, x, encoder_output, encoder_mask, kg_encoder_output, kg_encoder_mask, db_encoder_output, db_encoder_mask):
-        decoder_mask = self._create_selfattn_mask(x)
+    def forward(self, x, decoder_mask, encoder_output, encoder_mask, kg_encoder_output, kg_encoder_mask, db_encoder_output, db_encoder_mask):
         residual = x
         x = self.self_attention(query=x, mask=decoder_mask)
         x = self.dropout(x)
@@ -175,12 +174,6 @@ class TransformerDecoder4KGLayer(nn.Module):
         x = _normalize(x, self.norm3)
         return x
 
-    def _create_selfattn_mask(self, x):
-        bsz = x.size(0)
-        time = x.size(1)
-        mask = torch.tril(x.new(time, time).fill_(1))
-        mask = mask.unsqueeze(0).expand(bsz, -1, -1)
-        return mask
 
 
 class Bert4KGModel(nn.Module):
@@ -274,12 +267,14 @@ class Bert4KGModel(nn.Module):
                 dbpedias_emb_list.append(torch.zeros(self.hidden_dim).to(self.device))
                 db_con_mask.append(torch.zeros([1]).to(self.device))
                 continue
-            db_graph_attn_emb = self.db_graph_attn(db_nodes_features[dbpedias[:dbpedias.cpu().numpy().tolist().index(0)]])
+            db_graph_emb = db_nodes_features[dbpedias[:dbpedias.cpu().numpy().tolist().index(0)]]
+            db_graph_attn_emb = self.db_graph_attn(db_graph_emb)
             dbpedias_emb_list.append(db_graph_attn_emb)
             db_con_mask.append(torch.ones([1]).to(self.device))
         db_graph_attn_emb = torch.stack(dbpedias_emb_list)
         db_con_mask = torch.stack(db_con_mask)
-        con_graph_attn_emb = self.con_graph_attn(con_nodes_features[concept_mentioned],concept_mentioned!=0)
+        con_graph_emb = con_nodes_features[concept_mentioned]
+        con_graph_attn_emb = self.con_graph_attn(con_graph_emb,concept_mentioned!=0)
         # 通过user_emb和db_nodes_features计算rec_scores，对比labels得到rec_loss
         con_scores = F.linear(self.db_info_fc(db_graph_attn_emb), con_nodes_features, self.con_output.bias)
         db_scores = F.linear(self.con_info_fc(con_graph_attn_emb), db_nodes_features, self.db_output.bias)
@@ -384,7 +379,8 @@ class Bert4KGModel(nn.Module):
             for idx in range(self.max_r_length):
                 predict_emb = self.drop(self.layer_norm(predict_emb))
                 for layer in self.decoder_layers:
-                    predict_emb = layer(predict_emb, encoder_latent, context_mask!=self.special_wordIdx['<pad>'], con_graph_fc_emb, concept_mentioned != 0, db_graph_fc_emb, dbpedia_mentioned != 0)
+                    predict_vm = torch.ones(predict_emb.size(0), predict_emb.size(1), predict_emb.size(1))
+                    predict_emb = layer(predict_emb, torch.tril(predict_vm).to(self.device), encoder_latent, context_mask!=self.special_wordIdx['<pad>'], con_graph_fc_emb, concept_mentioned != 0, db_graph_fc_emb, dbpedia_mentioned != 0)
                 decoder_latent = predict_emb[:,-1:,:]
                 graph_latent = self.graph_latent_fc(torch.cat([con_graph_attn_fc_emb.unsqueeze(1), db_graph_attn_fc_emb.unsqueeze(1), decoder_latent], -1))
                 gen_scores = F.linear(decoder_latent, self.word_embeddings.weight) + self.graph_latent_gen_fc(graph_latent)
@@ -401,7 +397,7 @@ class Bert4KGModel(nn.Module):
             response_emb = response_emb * torch.tensor(np.sqrt(self.embedding_size)).to(self.device) + self.position_embeddings(response_pos) + self.segment_embedding(response_mask)
             response_emb = self.drop(self.layer_norm(response_emb))
             for layer in self.decoder_layers:
-                response_emb = layer(response_emb, encoder_latent, context_mask != self.special_wordIdx['<pad>'], con_graph_fc_emb, concept_mentioned != 0, db_graph_fc_emb, dbpedia_mentioned != 0)
+                response_emb = layer(response_emb, torch.tril(response_vm).to(self.device), encoder_latent, context_mask != self.special_wordIdx['<pad>'], con_graph_fc_emb, concept_mentioned != 0, db_graph_fc_emb, dbpedia_mentioned != 0)
             decoder_latent = response_emb
             graph_latent = self.graph_latent_fc(torch.cat([con_graph_attn_fc_emb.unsqueeze(1).repeat(1, self.max_r_length, 1), db_graph_attn_fc_emb.unsqueeze(1).repeat(1, self.max_r_length, 1), decoder_latent], -1))
             gen_scores = F.linear(decoder_latent, self.word_embeddings.weight) + self.graph_latent_gen_fc(graph_latent)

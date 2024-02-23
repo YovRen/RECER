@@ -94,22 +94,25 @@ class CRSDataset(Dataset):
                     abs_idx_src.append(last_abs_idx)
                 # 根据树构建其他内容input_ids&attention_mask
                 for i, (token, relates) in enumerate(sent_tree):
-                    input_ids.append(self.word2wordIdx.get(token,self.special_wordIdx['<unk>']))
                     if token in self.concept2conceptIdx.keys():
+                        input_ids.append(self.word2wordIdx.get(token,self.special_wordIdx['<unk>']))
                         attention_mask.append(self.special_wordIdx['<concept>'])
                         concept_mentioned.append(self.concept2conceptIdx[token])
                     elif token.isdigit() and token in movieMentions.keys() and self.movieId2movie[token] in self.movie2dbpediaId.keys():
+                        input_ids.append(self.special_wordIdx['<dbpedia>'])
                         attention_mask.append(self.special_wordIdx['<dbpedia>'])
                         dbpedia_mentioned.append(self.movie2dbpediaId[self.movieId2movie[token]])
                         dbpedia_ratings[self.movie2dbpediaId[self.movieId2movie[token]]] = respondentQuestions[token]["suggested"] if message['senderWorkerId'] == respondentWorkerId else initiatorQuestions[token]["suggested"]
                     elif token.isdigit() and token in self.text2movie[message['text']]:
+                        input_ids.append(self.special_wordIdx['<dbpedia>'])
                         attention_mask.append(self.special_wordIdx['<dbpedia>'])
                         dbpedia_mentioned.append(self.movie2dbpediaId[self.movieId2movie[token]])
                     else:
+                        input_ids.append(self.word2wordIdx.get(token,self.special_wordIdx['<unk>']))
                         attention_mask.append(self.special_wordIdx['<unk>'])
                     for relate in relates:
-                        input_ids.append(self.word2wordIdx.get(relate[0],self.special_wordIdx['<unk>']))
-                        input_ids.append(self.word2wordIdx.get(relate[1],self.special_wordIdx['<unk>']))
+                        input_ids.append(self.special_wordIdx['<related>'])
+                        input_ids.append(self.special_wordIdx['<relation>'])
                         attention_mask += [self.special_wordIdx['<related>'],self.special_wordIdx['<relation>']]
                         related_mentioned.append(int(relate[0]))
                         relation_mentioned.append(int(relate[1]))
@@ -169,8 +172,8 @@ class CRSDataset(Dataset):
                     context_mask = np.array((history_attention_mask + [self.special_wordIdx['<eos>']] + [self.special_wordIdx['<pad>']] * (self.max_c_length - len(history_attention_mask)-1))[:self.max_c_length])
                     concept_mentioned = np.array((history_concept_mentioned + [0] * (self.max_c_length - len(history_concept_mentioned)))[:self.max_c_length])
                     dbpedia_mentioned = np.array((history_dbpedia_mentioned + [0] * (50 - len(history_dbpedia_mentioned)))[:50])
-                    related_mentioned = np.array((history_related_mentioned + [0] * (50 - len(history_related_mentioned)))[:50])
-                    relation_mentioned = np.array((history_relation_mentioned + [0] * (50 - len(history_relation_mentioned)))[:50])
+                    related_mentioned = np.array((history_related_mentioned + [0] * (200 - len(history_related_mentioned)))[:200])
+                    relation_mentioned = np.array((history_relation_mentioned + [0] * (200 - len(history_relation_mentioned)))[:200])
                     user_mentioned = np.array((history_user_mentioned + [0] * (50 - len(history_user_mentioned)))[:50])
                     response_vector = np.array((message_dict['input_ids'] + [self.special_wordIdx['<eos>']] +  [self.special_wordIdx['<pad>']] * (self.max_r_length - len(message_dict['input_ids'])-1))[:self.max_r_length])
                     response_mask = np.array((message_dict['attention_mask'] + [self.special_wordIdx['<eos>']] + [self.special_wordIdx['<pad>']] * (self.max_r_length - len(message_dict['attention_mask'])-1))[:self.max_r_length])
