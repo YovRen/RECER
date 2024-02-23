@@ -1,15 +1,13 @@
-from cgi import test
-import os
-os.environ["TOKENIZERS_PARALLELISM"] = "false"
 import torch
 import json,math
 import pickle as pkl
+import numpy as np
 from tqdm import tqdm
 from torch.utils.data import DataLoader
-from crsdataset import CRSDataset, concept_edge_list, dbpedia_edge_list
-from GPT24KG import GPT24KG
-from transformers import GPT2Tokenizer
-from utils import bleu_score, ids2tokens, unique_sentence_percent
+from crsdataset import CRSDataset
+from crsmodel import Bert4KGModel
+from utils import unique_sentence_percent, dist_score
+from nltk.translate.bleu_score import sentence_bleu
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -17,153 +15,205 @@ warnings.filterwarnings("ignore")
 class TrainLoop():
     def __init__(self):
         self.crs_data_path = "data_crs"
-        self.model_path = "gpt2"
         self.batch_size = 2
         self.learningrate = 0.001
-        self.gradient_clip=0.1
+        self.gradient_clip = 0.1
         self.optimizer = 'adam'
         self.device = 'cpu'
-        # self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
         self.n_user = 1075
         self.n_concept = 29308
+        self.n_mood = 10
         self.n_dbpedia = 64363
         self.n_relations = 46
         self.n_bases = 8
-        self.dim = 120
-
-        self.max_c_length = 80
-        self.max_r_length = 20
-
+        self.hidden_dim = 128
+        self.max_c_length = 256
+        self.max_r_length = 30
+        self.embedding_size = 300
+        self.n_heads = 2
+        self.n_layers = 2
+        self.ffn_size = 300
+        self.dropout = 0.1
+        self.attention_dropout = 0.0
+        self.relu_dropout = 0.1
+        self.encoder_output_pooling = 'first'
+        self.movieIds = pkl.load(open(self.crs_data_path + "/redial_movieIds.pkl", "rb"))
         self.movieId2movie = json.load(open(self.crs_data_path + '/redial_movieId2movie.jsonl', encoding='utf-8'))
+        self.text2movie = pkl.load(open(self.crs_data_path + '/redial_text2movie.pkl', 'rb'))
+        self.movie2dbpediaId = pkl.load(open(self.crs_data_path + '/dbpedia_movie2dbpediaId.pkl', 'rb'))
         self.userId2userIdx = json.load(open(self.crs_data_path + '/redial_userId2userIdx.jsonl', encoding='utf-8'))
         self.concept2conceptIdx = json.load(open(self.crs_data_path + '/concept_concept2conceptIdx.jsonl', encoding='utf-8'))
-        self.movie2dbpediaId = pkl.load(open(self.crs_data_path + '/dbpedia_movie2dbpediaId.pkl', 'rb'))
-        self.movie2dbpediaId[None]=-1
-        self.tokenizer = GPT2Tokenizer.from_pretrained(self.model_path, pad_token = "<|endoftext|>")
-        self.dbpedia_edge_list = dbpedia_edge_list(self)
-        self.concept_edge_sets = concept_edge_list(self)
-
-        self.train_dataset = CRSDataset('draft', self)
-        self.test_dataset = CRSDataset('draft', self)
-        self.valid_dataset = CRSDataset('draft', self)
-        self.train_dataloader = DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, drop_last=True)
-        self.test_dataloader = DataLoader(self.test_dataset, batch_size=self.batch_size, shuffle=True, drop_last=True)
-        self.valid_dataloader = DataLoader(self.valid_dataset, batch_size=self.batch_size, shuffle=True, drop_last=True)
-        self.metrics_rec={"rec_loss":0,"recall@1":0,"recall@10":0,"recall@50":0}
-        self.metrics_gen={"gen_loss":0,"ppl":0,"bleu1":0,"bleu4":0,"usr":0,"usn":0}
-        self.model = GPT24KG.from_pretrained(self)
+        self.concept_edges = open(self.crs_data_path + '/concept_edges.txt', encoding='utf-8')
+        self.stopwords = set([word.strip() for word in open(self.crs_data_path + '/stopwords.txt', encoding='utf-8')])
+        self.word2wordIdx = json.load(open(self.crs_data_path + '/redial_word2wordIdx.jsonl', encoding='utf-8'))
+        # self.wordIdx2word = json.load(open(self.crs_data_path + '/redial_wordIdx2word.jsonl', encoding='utf-8'))
+        self.dbpedia_subkg = json.load(open(self.crs_data_path + '/dbpedia_subkg.jsonl', encoding='utf-8'))
+        self.wordIdx2word = {self.word2wordIdx[key]:key for key in self.word2wordIdx}
+        self.word2wordEmb = np.load(self.crs_data_path + '/redial_word2wordEmb.npy')
+        self.special_wordIdx = {'<pad>':0, '<dbpedia>':1, '<concept>':2, '<unk>':3, '<split>':4, '<user>':5, '<movie>':6, '<mood>':7, '<eos>':8, '<related>':9, '<relation>':10}
+        self.vocab_size = len(self.word2wordIdx)+len(self.special_wordIdx)
+        self.train_dataset = CRSDataset('train', self)
+        self.valid_dataset = CRSDataset('data', self)
+        self.test_dataset = CRSDataset('data', self)
+        self.dbpedia_edge_list = self.train_dataset.dbpedia_edge_list.to(self.device)
+        self.concept_edge_sets = self.train_dataset.concept_edge_sets.to(self.device)
+        self.train_dataloader = DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=False, drop_last=True)
+        self.test_dataloader = DataLoader(self.test_dataset, batch_size=self.batch_size, shuffle=False, drop_last=True)
+        self.valid_dataloader = DataLoader(self.valid_dataset, batch_size=self.batch_size, shuffle=False, drop_last=True)
+        self.metrics_rec = {"rec_loss":0,"recall@1":0,"recall@10":0,"recall@50":0,"count":0}
+        self.metrics_gen = {"gen_loss":0,"ppl":0,"bleu1":0,"bleu2":0,"bleu3":0,"bleu4":0,"dist1":0,"dist2":0,"dist3":0,"dist4":0,"usr":0,"usn":0, "count":0}
+        self.model = Bert4KGModel(self).to(self.device)
         self.optimizer = {k.lower(): v for k, v in torch.optim.__dict__.items() if not k.startswith('__') and k[0].isupper()}[self.optimizer]([p for p in self.model.parameters() if p.requires_grad], lr=self.learningrate,amsgrad=True,betas=(0.9,0.999))
 
-    def train(self, epoch, freeze):
-        self.model.freeze_llm(freeze)
-        joint_losses=[]
-        best_val=0
-        for i in range(epoch):
+    def train(self, rec_epoch, gen_epoch, freeze):
+        best_val = 10000
+        for i in range(rec_epoch+gen_epoch):
             self.model.train()
-            for num, (userIdx, movieIdx, movie_rating, context_vector, context_mask, response_vector, response_mask, concept_mask, dbpedia_mask, concept_vector, dbpedia_vector) in enumerate(tqdm(self.train_dataloader)):
+            if i >= rec_epoch:
+                self.model.freeze_kg(True)
+            losses = []
+            for num, (userIdx, dbpediaId, dbpedia_rating, context_vector, context_mask, context_pos, context_vm, concept_mentioned, dbpedia_mentioned,related_mentioned,relation_mentioned, user_mentioned, response_vector, response_mask, response_pos, response_vm, concept_vector, dbpedia_vector) in enumerate(tqdm(self.train_dataloader)):
                 self.optimizer.zero_grad()
-                preds, rec_scores, gen_loss, rec_loss, rating_loss, info_db_loss, info_con_loss=self.model(userIdx, movieIdx, movie_rating, context_vector, context_mask, response_vector, response_mask, concept_mask, dbpedia_mask, concept_vector, dbpedia_vector)
-                if freeze and i==0:
-                    joint_loss=info_db_loss
-                elif freeze:
-                    joint_loss=rec_loss
+                info_loss, rec_scores, rec_loss, rec2_scores, rec2_loss, predict_vector, gen_loss = self.model(userIdx.to(self.device), dbpediaId.to(self.device), dbpedia_rating.to(self.device), context_vector.to(self.device), context_mask.to(self.device), context_pos.to(self.device), context_vm.to(self.device), concept_mentioned.to(self.device), dbpedia_mentioned.to(self.device),related_mentioned.to(self.device),relation_mentioned.to(self.device), user_mentioned.to(self.device), response_vector.to(self.device), response_mask.to(self.device), response_pos.to(self.device), response_vm.to(self.device), concept_vector.to(self.device), dbpedia_vector.to(self.device))
+                if i < rec_epoch:
+                    joint_loss = rec_loss+0.025*info_loss
                 else:
-                    joint_loss=gen_loss+0.5*rating_loss
-                joint_losses.append([gen_loss, rec_loss,rating_loss,info_db_loss,info_con_loss,joint_loss])
+                    joint_loss = gen_loss+0.5*rec2_loss
                 joint_loss.backward()
+                self.optimizer.step()
                 if self.gradient_clip > 0:
                     torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.gradient_clip)
-                self.optimizer.step()
-                if num%30==0:
-                    print('gen_loss is %f'%(sum([l[0] for l in joint_losses])/len(joint_losses)))
-                    print('rec_loss is %f'%(sum([l[1] for l in joint_losses])/len(joint_losses)))
-                    print('rating_loss is %f'%(sum([l[2] for l in joint_losses])/len(joint_losses)))
-                    print('info_db_loss is %f'%(sum([l[3] for l in joint_losses])/len(joint_losses)))
-                    print('info_con_loss is %f'%(sum([l[4] for l in joint_losses])/len(joint_losses)))
-                    print('joint_loss is %f'%(sum([l[5] for l in joint_losses])/len(joint_losses)))
-                    joint_losses=[]
-            if freeze:
-                output_metrics_rec = self.val_rec()
-                if best_val > output_metrics_rec["recall@50"]+output_metrics_rec["recall@1"]:
+                losses.append([rec_loss.item(),info_loss.item(),gen_loss.item(),rec2_loss.item(),joint_loss.item()])
+                if (num+1)%50 == 0:
+                    print('epoch%d num%d'%(i, num+1))
+                    print('rec_loss is %f'%(sum([l[0] for l in losses])/len(losses)))
+                    print('info_loss is %f'%(sum([l[1] for l in losses])/len(losses)))
+                    print('gen_loss is %f'%(sum([l[2] for l in losses])/len(losses)))
+                    print('rec2_loss is %f'%(sum([l[3] for l in losses])/len(losses)))
+                    print('joint_loss is %f'%(sum([l[4] for l in losses])/len(losses)))
+                    losses = []
+            output_metrics_rec, output_metrics_gen = self.val()
+            if i < rec_epoch:
+                if best_val < output_metrics_rec["rec_loss"]:
                     break
                 else:
-                    best_val = output_metrics_rec["recall@50"]+output_metrics_rec["recall@1"]
-                    self.model.save_model()
+                    best_val = output_metrics_rec["rec_loss"]
+                    self.model.save_model('rec')
                     print("recommendation model saved once------------------------------------------------")
+            elif i == rec_epoch:
+                best_val = output_metrics_gen["gen_loss"]
+                self.model.save_model('gen')
+                print("generator model saved once------------------------------------------------")
             else:
-                output_metrics_gen = self.val_gen()
-                if best_val < output_metrics_gen["ppl"]:
-                    pass
+                if best_val < output_metrics_gen["gen_loss"]:
+                    break
                 else:
-                    best_val = output_metrics_gen["ppl"]
-                    self.model.save_model()
+                    best_val = output_metrics_gen["gen_loss"]
+                    self.model.save_model('gen')
                     print("generator model saved once------------------------------------------------")
-                
-    def val_rec(self,is_test=False):
-        self.model.eval()
-        val_dataloader = self.test_dataloader if is_test else self.valid_dataloader
-        self.metrics_gen['rec_loss'] = 0.0
-        self.metrics_rec["recall@1"] = 0
-        self.metrics_rec["recall@10"] = 0
-        self.metrics_rec["recall@50"] = 0
-        for userIdx, movieIdx, movie_rating, context_vector, context_mask, response_vector, response_mask, concept_mask, dbpedia_mask, concept_vector, dbpedia_vector in tqdm(val_dataloader):
-            preds, rec_scores, gen_loss, rec_loss, rating_loss, info_db_loss, info_con_loss=self.model(userIdx, movieIdx, movie_rating, context_vector, context_mask, response_vector, response_mask, concept_mask, dbpedia_mask, concept_vector, dbpedia_vector)
-            self.metrics_rec["rec_loss"] += rec_loss.item()
-            _, pred_idx = torch.topk(rec_scores.cpu(), k=100, dim=1)
-            for b in range(self.batch_size):
-                self.metrics_rec["recall@1"] += int(movieIdx[b] in pred_idx[b][:1].tolist())
-                self.metrics_rec["recall@10"] += int(movieIdx[b] in pred_idx[b][:10].tolist())
-                self.metrics_rec["recall@50"] += int(movieIdx[b] in pred_idx[b][:50].tolist())
-        self.metrics_rec={key: self.metrics_rec[key] / (self.batch_size*len(val_dataloader)) for key in self.metrics_rec}
-        print(self.metrics_rec)
-        return self.metrics_rec
 
-    def val_gen(self,is_test=False):
+
+    def val(self,is_test=False):
         self.model.eval()
+        self.metrics_rec = {"rec_loss":0,"recall@1":0,"recall@10":0,"recall@50":0,"rec2_loss":0,"recall2@1":0,"recall2@10":0,"recall2@50":0,"count":0}
+        self.metrics_gen = {"gen_loss":0,"ppl":0,"bleu1":0,"bleu2":0,"bleu3":0,"bleu4":0,"dist1":0,"dist2":0,"dist3":0,"dist4":0,"usr":0,"usn":0, "count":0}
+        def vector2sentence(batch_sen):
+            sentences = []
+            for sen in batch_sen.numpy().tolist():
+                sentence = []
+                for word in sen:
+                    if word == self.special_wordIdx['<unk>']:
+                        sentence.append('_UNK_')
+                    elif word > len(self.special_wordIdx):
+                        sentence.append(self.wordIdx2word[word])
+                sentences.append(sentence)
+            return sentences
+            
         val_dataloader = self.test_dataloader if is_test else self.valid_dataloader
-        context_list=[]
-        response_list=[]
-        predict_list=[]
-        self.metrics_gen['gen_loss'] = 0.0
-        for userIdx, movieIdx, movie_rating, context_vector, context_mask, response_vector, response_mask, concept_mask, dbpedia_mask, concept_vector, dbpedia_vector in tqdm(val_dataloader):
-            preds, rec_scores, gen_loss, rec_loss, rating_loss, info_db_loss, info_con_loss=self.model(userIdx, movieIdx, movie_rating, context_vector, context_mask, response_vector, response_mask, concept_mask, dbpedia_mask, concept_vector, dbpedia_vector)
+        tokens_response = []
+        tokens_predict = []
+        tokens_context = []
+        for userIdx, dbpediaId, dbpedia_rating, context_vector, context_mask, context_pos, context_vm, concept_mentioned, dbpedia_mentioned,related_mentioned,relation_mentioned, user_mentioned, response_vector, response_mask, response_pos, response_vm, concept_vector, dbpedia_vector in tqdm(val_dataloader):
+            with torch.no_grad():
+                _, rec_scores, rec_loss, rec2_scores, rec2_loss, _, gen_loss = self.model(userIdx.to(self.device), dbpediaId.to(self.device), dbpedia_rating.to(self.device), context_vector.to(self.device), context_mask.to(self.device), context_pos.to(self.device), context_vm.to(self.device), concept_mentioned.to(self.device), dbpedia_mentioned.to(self.device),related_mentioned.to(self.device),relation_mentioned.to(self.device), user_mentioned.to(self.device), response_vector.to(self.device), response_mask.to(self.device), response_pos.to(self.device), response_vm.to(self.device), concept_vector.to(self.device), dbpedia_vector.to(self.device))
+                _, _, _, _, _,predict_vector, _ = self.model(userIdx.to(self.device), dbpediaId.to(self.device), dbpedia_rating.to(self.device), context_vector.to(self.device), context_mask.to(self.device), context_pos.to(self.device), context_vm.to(self.device), concept_mentioned.to(self.device), dbpedia_mentioned.to(self.device),related_mentioned.to(self.device),relation_mentioned.to(self.device), user_mentioned.to(self.device), None, None, None, None, concept_vector.to(self.device), dbpedia_vector.to(self.device))
+            self.metrics_rec["rec_loss"] += rec_loss.item()
+            self.metrics_rec["rec2_loss"] += rec2_loss.item()
             self.metrics_gen['gen_loss'] += gen_loss.item()
-            self.metrics_gen['ppl'] = math.exp(self.metrics_gen['gen_loss'])
-            if test==True:
-                response_list.extend(response_vector.tolist())
-                context_list.extend(context_vector.tolist())
-                context_vector = context_vector[:, :1].to(self.device)
-                context_mask = None
-                response_vector = None
-                response_mask = None
-                for idx in range(self.max_r_length):
-                    preds, rec_scores, gen_loss, rec_loss, rating_loss, info_db_loss, info_con_loss=self.model(userIdx, movieIdx, movie_rating, context_vector, context_mask, response_vector, response_mask, concept_mask, dbpedia_mask, concept_vector, dbpedia_vector)
-                    last_token = preds[:, -1]
-                    context_vector = torch.cat([context_vector, last_token], 1)
-                predict_list.extend(context_vector.tolist())
-        if test==True:
-            tokens_response = [ids2tokens(ids, self.tokenizer) for ids in response_list]
-            tokens_predict = [ids2tokens(ids, self.tokenizer) for ids in predict_list]
-            tokens_context = [ids2tokens(ids, self.tokenizer) for ids in context_list]
-            self.metrics_gen['bleu1'] = bleu_score(tokens_response, tokens_predict, n_gram=1, smooth=False)
-            self.metrics_gen['bleu4'] = bleu_score(tokens_response, tokens_predict, n_gram=4, smooth=False)
-            self.metrics_gen['usr'], self.metrics_gen['usn'] = unique_sentence_percent(tokens_predict)
-            text_response = [' '.join(tokens) for tokens in tokens_response]
-            text_predict = [' '.join(tokens) for tokens in tokens_predict]
-            text_context = [' '.join(tokens) for tokens in tokens_context]
-            with open('test_gen.txt','w',encoding='utf-8') as file:
-                for context,predict,response in zip(text_context,text_predict,text_response):
-                    file.writelines('='*100+'\n')
-                    file.writelines("context:"+context+'\n')
-                    file.writelines("response:"+response+'\n')
-                    file.writelines("predict:"+predict+'\n')
+            _, pred_idx = torch.topk(rec_scores.cpu()[:, torch.LongTensor(self.movieIds)], k=100, dim=1)
+            _, pred2_idx = torch.topk(rec2_scores.cpu()[:, torch.LongTensor(self.movieIds)], k=100, dim=1)
+            for b in range(context_vector.shape[0]):
+                if dbpediaId[b].item() == 0:
+                    continue
+                target_idx = self.movieIds.index(dbpediaId[b].item())
+                self.metrics_rec["recall@1"] += int(target_idx in pred_idx[b][:1].tolist())
+                self.metrics_rec["recall@10"] += int(target_idx in pred_idx[b][:10].tolist())
+                self.metrics_rec["recall@50"] += int(target_idx in pred_idx[b][:50].tolist())
+                self.metrics_rec["recall2@1"] += int(target_idx in pred2_idx[b][:1].tolist())
+                self.metrics_rec["recall2@10"] += int(target_idx in pred2_idx[b][:10].tolist())
+                self.metrics_rec["recall2@50"] += int(target_idx in pred2_idx[b][:50].tolist())
+                self.metrics_rec["count"] += 1
+            tokens_response.extend(vector2sentence(response_vector.cpu()))
+            tokens_predict.extend(vector2sentence(predict_vector.cpu()))
+            tokens_context.extend(vector2sentence(context_vector.cpu()))
+        for out, tar in zip(tokens_predict, tokens_response):
+            self.metrics_gen['bleu1'] += sentence_bleu([tar], out, weights=(1, 0, 0, 0))
+            self.metrics_gen['bleu2'] += sentence_bleu([tar], out, weights=(0, 1, 0, 0))
+            self.metrics_gen['bleu3'] += sentence_bleu([tar], out, weights=(0, 0, 1, 0))
+            self.metrics_gen['bleu4'] += sentence_bleu([tar], out, weights=(0, 0, 0, 1))
+            self.metrics_gen['count'] += 1
+        unigram_count = 0
+        bigram_count = 0
+        trigram_count = 0
+        quagram_count = 0
+        unigram_set = set()
+        bigram_set = set()
+        trigram_set = set()
+        quagram_set = set()
+        # outputs is a list which contains several sentences, each sentence contains several words
+        for sen in tokens_predict:
+            for word in sen:
+                unigram_count += 1
+                unigram_set.add(word)
+            for start in range(len(sen) - 1):
+                bg = str(sen[start]) + ' ' + str(sen[start + 1])
+                bigram_count += 1
+                bigram_set.add(bg)
+            for start in range(len(sen)-2):
+                trg = str(sen[start]) + ' ' + str(sen[start + 1]) + ' ' + str(sen[start + 2])
+                trigram_count += 1
+                trigram_set.add(trg)
+            for start in range(len(sen)-3):
+                quag = str(sen[start]) + ' ' + str(sen[start + 1]) + ' ' + str(sen[start + 2]) + ' ' + str(sen[start + 3])
+                quagram_count += 1
+                quagram_set.add(quag)
+        self.metrics_gen['dist1'] = len(unigram_set) / len(tokens_predict)#unigram_count
+        self.metrics_gen['dist2'] = len(bigram_set) / len(tokens_predict)#bigram_count
+        self.metrics_gen['dist3'] = len(trigram_set)/len(tokens_predict)#trigram_count
+        self.metrics_gen['dist4'] = len(quagram_set)/len(tokens_predict)#quagram_count
+        self.metrics_gen['usr'], self.metrics_gen['usn'] = unique_sentence_percent(tokens_predict)
+        text_response = [' '.join(tokens) for tokens in tokens_response]
+        text_predict = [' '.join(tokens) for tokens in tokens_predict]
+        text_context = [' '.join(tokens) for tokens in tokens_context]
+        self.metrics_gen['usr'], self.metrics_gen['usn'] = unique_sentence_percent(tokens_predict)
+        text_response = [' '.join(tokens) for tokens in tokens_response]
+        text_predict = [' '.join(tokens) for tokens in tokens_predict]
+        text_context = [' '.join(tokens) for tokens in tokens_context]
+        with open('test_gen.txt','w',encoding='utf-8') as file:
+            for context,predict,response in zip(text_context,text_predict,text_response):
+                file.writelines('='*100+'\n')
+                file.writelines("context:"+context+'\n')
+                file.writelines("response:"+response+'\n')
+                file.writelines("predict:"+predict+'\n')
+        self.metrics_rec = {key: self.metrics_rec[key] / self.metrics_rec['count'] for key in self.metrics_rec}
+        self.metrics_gen = {key: self.metrics_gen[key] if 'dist' in key else self.metrics_gen[key]/self.metrics_gen['count'] for key in self.metrics_gen}
+        self.metrics_gen['ppl'] = math.exp(self.metrics_gen['gen_loss'])
+        print(self.metrics_rec)
         print(self.metrics_gen)
-        return self.metrics_gen
+        return self.metrics_rec, self.metrics_gen
+
 
 if __name__ == '__main__':
-    loop=TrainLoop()
-    loop.train(epoch=3,freeze=True)
-    loop.train(epoch=3,freeze=False)
-    met=loop.val_rec(is_test = True)
-    met=loop.val_gen(is_test = True)
+    loop = TrainLoop()
+    loop.train(rec_epoch=1,gen_epoch=1,freeze=False)
+    met = loop.val(is_test = True)
