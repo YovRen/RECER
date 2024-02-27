@@ -223,7 +223,7 @@ class Bert4KGModel(nn.Module):
         self.mse_loss = nn.MSELoss(size_average=False, reduce=False)
         # encoder预处理部分的参数
         self.user_embeddings = nn.Embedding(self.n_user, self.embedding_size)
-        self.movie_embeddings = nn.Embedding(self.n_dbpedia, self.embedding_size)
+        self.movie_embeddings_fc = nn.Linear(self.hidden_dim, self.embedding_size)
         self.relation_embeddings = nn.Embedding(self.n_relations, self.embedding_size)
         self.mood_attn = SelfAttentionLayer(self.embedding_size, self.embedding_size)
         self.mood_attn_fc = nn.Linear(self.embedding_size, self.n_mood)
@@ -241,7 +241,8 @@ class Bert4KGModel(nn.Module):
         self.encoder_layers = nn.ModuleList([TransformerEncoderLayer(self.n_heads, self.embedding_size, self.ffn_size, attention_dropout=self.attention_dropout, relu_dropout=self.relu_dropout, dropout=self.dropout) for _ in range(self.n_layers)])
         self.encoder_output_pooling = args.encoder_output_pooling
         self.encoder_latent_fc = nn.Linear(self.embedding_size, self.embedding_size)
-        self.encoder_latent_rec_fc = nn.Linear(self.embedding_size, self.n_dbpedia)
+        self.encoder_latent_rec2_fc = nn.Linear(self.embedding_size, self.hidden_dim)
+        self.rec2_output = nn.Linear(self.hidden_dim, self.n_dbpedia)
         # gen_loss部分的参数
         self.decoder_layers = nn.ModuleList([TransformerDecoder4KGLayer(self.n_heads, self.embedding_size, self.ffn_size, attention_dropout=self.attention_dropout, relu_dropout=self.relu_dropout, dropout=self.dropout) for _ in range(self.n_layers)])
         self.con_graph_fc = nn.Linear(self.hidden_dim, self.embedding_size)
@@ -292,7 +293,7 @@ class Bert4KGModel(nn.Module):
         con_graph_fc_emb = self.con_graph_fc(con_nodes_features[concept_mentioned])
         con_graph_attn_fc_emb = self.con_graph_attn_fc(con_graph_attn_emb)
         context_emb = self.word_embeddings(context_vector)
- 
+        self.movie_embeddings=self.movie_embeddings_fc(db_nodes_features)
         lastrow = -1
         i = -1
         for indice in torch.nonzero(context_mask == self.special_wordIdx['<user>']):
@@ -310,7 +311,7 @@ class Bert4KGModel(nn.Module):
             else:
                 lastrow = indice[0]
                 i = 0
-            context_emb[indice[0], indice[1]] = self.movie_embeddings(dbpedia_mentioned[indice[0],i])
+            context_emb[indice[0], indice[1]] = self.movie_embeddings[dbpedia_mentioned[indice[0],i]]
         lastrow=-1
         lastcol=-1
         for indice in torch.nonzero(context_mask==self.special_wordIdx['<mood>']):
@@ -329,7 +330,7 @@ class Bert4KGModel(nn.Module):
             else:
                 lastrow = indice[0]
                 i = 0
-            context_emb[indice[0], indice[1]] = self.movie_embeddings(dbpedia_mentioned[indice[0],i])
+            context_emb[indice[0], indice[1]] = self.movie_embeddings[dbpedia_mentioned[indice[0],i]]
         lastrow = -1
         i = -1
         for indice in torch.nonzero(context_mask == self.special_wordIdx['<related>']):
@@ -338,7 +339,7 @@ class Bert4KGModel(nn.Module):
             else:
                 lastrow = indice[0]
                 i = 0
-            context_emb[indice[0], indice[1]] = self.movie_embeddings(related_mentioned[indice[0],i])
+            context_emb[indice[0], indice[1]] = self.movie_embeddings[related_mentioned[indice[0],i]]
         lastrow = -1
         i = -1
         for indice in torch.nonzero(context_mask == self.special_wordIdx['<relation>']):
@@ -365,14 +366,15 @@ class Bert4KGModel(nn.Module):
         else:
             output = context_emb[:, 0, :]
         output = torch.tanh(self.encoder_latent_fc(output))
-        rec2_scores = self.encoder_latent_rec_fc(output)
+        rec2_scores = self.encoder_latent_rec2_fc(output)
+        rec2_scores = F.linear(rec2_scores, db_nodes_features, self.rec2_output.bias)
         rec2_loss = torch.mean(self.criterion_loss(rec2_scores, dbpediaId)*torch.tensor([1 if rating !=-1 else 0 for rating in dbpedia_rating]).float().to(self.device))
 
         if response_vector is None:
             predict_vector = torch.tensor([self.special_wordIdx['<user>'],self.special_wordIdx['<movie>']],dtype=torch.long).expand(self.batch_size,2).to(self.device)
             predict_emb = self.word_embeddings(predict_vector)
             predict_emb[:,0] = self.user_embeddings(userIdx)
-            predict_emb[:,1] = self.movie_embeddings(dbpediaId)
+            predict_emb[:,1] = self.movie_embeddings[dbpediaId]
             predict_pos = torch.tensor([0, 1],dtype=torch.long).expand(self.batch_size,2).to(self.device)
             predict_mask = torch.tensor([self.special_wordIdx['<user>'],self.special_wordIdx['<movie>']],dtype=torch.long).expand(self.batch_size,2).to(self.device)
             predict_emb = predict_emb * torch.tensor(np.sqrt(self.embedding_size)).to(self.device) + self.position_embeddings(predict_pos) + self.segment_embedding(predict_mask)
@@ -393,7 +395,7 @@ class Bert4KGModel(nn.Module):
         else:
             response_emb = self.word_embeddings(response_vector)
             response_emb[:,0] = self.user_embeddings(userIdx)
-            response_emb[:,1] = self.movie_embeddings(dbpediaId)
+            response_emb[:,1] = self.movie_embeddings[dbpediaId]
             response_emb = response_emb * torch.tensor(np.sqrt(self.embedding_size)).to(self.device) + self.position_embeddings(response_pos) + self.segment_embedding(response_mask)
             response_emb = self.drop(self.layer_norm(response_emb))
             for layer in self.decoder_layers:
@@ -433,9 +435,9 @@ class Bert4KGModel(nn.Module):
 
     def load_model(self, tag):
         if tag=="rec":
-            self.load_state_dict(torch.load('rec_net_parameter.pkl'))  
+            self.load_state_dict(torch.load('rec_net_parameter.pkl'), strict=False)  
         else:
-            self.load_state_dict(torch.load('gen_net_parameter.pkl'))
+            self.load_state_dict(torch.load('gen_net_parameter.pkl'), strict=False)
 
 
 

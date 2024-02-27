@@ -52,9 +52,12 @@ class TrainLoop():
         self.word2wordEmb = np.load(self.crs_data_path + '/redial_word2wordEmb.npy')
         self.special_wordIdx = {'<pad>':0, '<dbpedia>':1, '<concept>':2, '<unk>':3, '<split>':4, '<user>':5, '<movie>':6, '<mood>':7, '<eos>':8, '<related>':9, '<relation>':10}
         self.vocab_size = len(self.word2wordIdx)+len(self.special_wordIdx)
-        self.train_dataset = CRSDataset('toy_train', self)
-        self.valid_dataset = CRSDataset('toy_valid', self)
-        self.test_dataset = CRSDataset('toy_test', self)
+        # self.train_dataset = CRSDataset('toy_test', self)
+        # self.valid_dataset = CRSDataset('toy_test', self)
+        # self.test_dataset = CRSDataset('toy_test', self)
+        self.train_dataset = CRSDataset('train', self)
+        self.valid_dataset = CRSDataset('valid', self)
+        self.test_dataset = CRSDataset('test', self)
         self.dbpedia_edge_list = self.train_dataset.dbpedia_edge_list.to(self.device)
         self.concept_edge_sets = self.train_dataset.concept_edge_sets.to(self.device)
         self.train_dataloader = DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=False, drop_last=True)
@@ -72,19 +75,27 @@ class TrainLoop():
             if i >= rec_epoch:
                 self.model.freeze_kg(True)
             losses = []
+            bare_num = 0
+            bare_value=10000
             for num, (userIdx, dbpediaId, dbpedia_rating, context_vector, context_mask, context_pos, context_vm, concept_mentioned, dbpedia_mentioned,related_mentioned,relation_mentioned, user_mentioned, response_vector, response_mask, response_pos, response_vm, concept_vector, dbpedia_vector) in enumerate(tqdm(self.train_dataloader)):
                 self.optimizer.zero_grad()
                 info_loss, rec_scores, rec_loss, rec2_scores, rec2_loss, predict_vector, gen_loss = self.model(userIdx.to(self.device), dbpediaId.to(self.device), dbpedia_rating.to(self.device), context_vector.to(self.device), context_mask.to(self.device), context_pos.to(self.device), context_vm.to(self.device), concept_mentioned.to(self.device), dbpedia_mentioned.to(self.device),related_mentioned.to(self.device),relation_mentioned.to(self.device), user_mentioned.to(self.device), response_vector.to(self.device), response_mask.to(self.device), response_pos.to(self.device), response_vm.to(self.device), concept_vector.to(self.device), dbpedia_vector.to(self.device))
                 if i < rec_epoch:
-                    joint_loss = rec_loss+0.025*info_loss
+                    joint_loss = rec_loss+info_loss
                 else:
-                    joint_loss = gen_loss+0.5*rec2_loss
+                    joint_loss = gen_loss+rec2_loss
+                if joint_loss > bare_value:
+                    bare_num+=1
+                else:
+                    bare_num=0
+                if bare_num>3:
+                    continue
                 joint_loss.backward()
                 self.optimizer.step()
                 if self.gradient_clip > 0:
                     torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.gradient_clip)
                 losses.append([rec_loss.item(),info_loss.item(),gen_loss.item(),rec2_loss.item(),joint_loss.item()])
-                if (num+1)%50 == 0:
+                if (num+1)%(1024/self.batch_size) == 0:
                     print('epoch%d num%d'%(i, num+1))
                     print('rec_loss is %f'%(sum([l[0] for l in losses])/len(losses)))
                     print('info_loss is %f'%(sum([l[1] for l in losses])/len(losses)))
@@ -124,6 +135,8 @@ class TrainLoop():
                 for word in sen:
                     if word == self.special_wordIdx['<unk>']:
                         sentence.append('_UNK_')
+                    if word == self.special_wordIdx['<dbpedia>']:
+                        sentence.append('_DBPEDIA_')
                     elif word > len(self.special_wordIdx):
                         sentence.append(self.wordIdx2word[word])
                 sentences.append(sentence)
@@ -211,6 +224,6 @@ class TrainLoop():
 
 if __name__ == '__main__':
     loop = TrainLoop()
-    loop.model.load_model('gen')
+    loop.model.load_model('rec')
     loop.train(rec_epoch=0,gen_epoch=1)
     met = loop.val(is_test = True)

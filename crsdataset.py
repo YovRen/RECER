@@ -62,7 +62,6 @@ class CRSDataset(Dataset):
                 related_mentioned = []
                 relation_mentioned = []
                 dbpedia_ratings = {}
-                tokens = nltk.word_tokenize(message['text'])
                 relates = []
                 # create tree
                 sent_tree = []
@@ -71,7 +70,9 @@ class CRSDataset(Dataset):
                 abs_idx_src = []
                 pos_idx = -1
                 abs_idx = -1
-                # 构建树
+                # 用于检测消息中提及的电影并转换成特定格式
+                
+                tokens = nltk.word_tokenize(message['text'].replace('@', ''))
                 for token in tokens:
                     if token.isdigit() and token in movieMentions.keys() and self.movieId2movie[token] in self.movie2dbpediaId.keys():
                         relates = self.dbpedia_subkg.get(str(self.movie2dbpediaId[self.movieId2movie[token]]),[])
@@ -267,21 +268,21 @@ class CRSDataset(Dataset):
             lines = json.loads(case.strip())
             messages = lines['messages']
             for message in messages:
-                tokens = nltk.word_tokenize(message['text'])
+                tokens = nltk.word_tokenize(message['text'].replace('@', ''))
                 self.corpus.append(tokens)
         f = open(self.crs_data_path + '/' + 'test_data.jsonl', encoding='utf-8')
         for case in tqdm(f):
             lines = json.loads(case.strip())
             messages = lines['messages']
             for message in messages:
-                tokens = nltk.word_tokenize(message['text'])
+                tokens = nltk.word_tokenize(message['text'].replace('@', ''))
                 self.corpus.append(tokens)
         f = open(self.crs_data_path + '/' + 'valid_data.jsonl', encoding='utf-8')
         for case in tqdm(f):
             lines = json.loads(case.strip())
             messages = lines['messages']
             for message in messages:
-                tokens = nltk.word_tokenize(message['text'])
+                tokens = nltk.word_tokenize(message['text'].replace('@', ''))
                 self.corpus.append(tokens)
         model = gensim.models.word2vec.Word2Vec(self.corpus,vector_size=300,min_count=1)
         word2wordIdx = {word: i + len(self.special_wordIdx) for i, word in enumerate(model.wv.index_to_key)}
