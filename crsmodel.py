@@ -1,16 +1,18 @@
-import torch,math
+import torch, math
 import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 from torch_geometric.nn.conv.rgcn_conv import RGCNConv
 from torch_geometric.nn.conv.gcn_conv import GCNConv
-from transformers.models.bert.modeling_bert import BertForMaskedLM
+
 NEAR_INF = 1e20
 NEAR_INF_FP16 = 65504
+
 
 def _normalize(tensor, norm_layer):
     size = tensor.size()
     return norm_layer(tensor.view(-1, size[-1])).view(size)
+
 
 class SelfAttentionLayer(nn.Module):
     def __init__(self, dim, da, alpha=0.2, dropout=0.5):
@@ -43,13 +45,14 @@ class SelfAttentionLayer_batch(nn.Module):
 
     def forward(self, x, mask):
         assert self.dim == x.shape[2]
-        mask = 1e-30*mask.float()
+        mask = 1e-30 * mask.float()
         e = torch.matmul(torch.tanh(torch.matmul(x, self.a)), self.b)
-        attention = F.softmax(e+mask.unsqueeze(-1),dim=1)
-        return torch.matmul(torch.transpose(attention,1,2), x).squeeze(1)
+        attention = F.softmax(e + mask.unsqueeze(-1), dim=1)
+        return torch.matmul(torch.transpose(attention, 1, 2), x).squeeze(1)
+
 
 class MultiHeadAttention(nn.Module):
-    def __init__(self, n_heads, dim, dropout=0):
+    def __init__(self, n_heads, dim, dropout=0.0):
         super().__init__()
         self.n_heads = n_heads
         self.dim = dim
@@ -70,11 +73,13 @@ class MultiHeadAttention(nn.Module):
         n_heads = self.n_heads
         dim_per_head = dim // n_heads
         scale = math.sqrt(dim_per_head)
+
         def prepare_head(tensor):
             bsz, seq_len, _ = tensor.size()
             tensor = tensor.view(batch_size, tensor.size(1), n_heads, dim_per_head)
             tensor = tensor.transpose(1, 2).contiguous().view(batch_size * n_heads, seq_len, dim_per_head)
             return tensor
+
         if key is None and value is None:
             key = value = query
         elif value is None:
@@ -94,8 +99,9 @@ class MultiHeadAttention(nn.Module):
         out = self.out_lin(attentioned)
         return out
 
+
 class TransformerFFN(nn.Module):
-    def __init__(self, dim, dim_hidden, relu_dropout=0):
+    def __init__(self, dim, dim_hidden, relu_dropout=0.0):
         super().__init__()
         self.relu_dropout = nn.Dropout(p=relu_dropout)
         self.lin1 = nn.Linear(dim, dim_hidden)
@@ -109,8 +115,9 @@ class TransformerFFN(nn.Module):
         x = self.lin2(x)
         return x
 
+
 class TransformerEncoderLayer(nn.Module):
-    def __init__(self, n_heads, embedding_size, ffn_size,  attention_dropout=0.0, relu_dropout=0.0, dropout=0.0):
+    def __init__(self, n_heads, embedding_size, ffn_size, attention_dropout=0.0, relu_dropout=0.0, dropout=0.0):
         super().__init__()
         self.dim = embedding_size
         self.ffn_dim = ffn_size
@@ -126,6 +133,7 @@ class TransformerEncoderLayer(nn.Module):
         tensor = tensor + self.dropout(self.ffn(tensor))
         tensor = _normalize(tensor, self.norm2)
         return tensor
+
 
 class TransformerDecoder4KGLayer(nn.Module):
     def __init__(self, n_heads, embedding_size, ffn_size, attention_dropout=0.0, relu_dropout=0.0, dropout=0.0):
@@ -175,7 +183,6 @@ class TransformerDecoder4KGLayer(nn.Module):
         return x
 
 
-
 class Bert4KGModel(nn.Module):
     def __init__(self, args):
         super().__init__()
@@ -206,12 +213,12 @@ class Bert4KGModel(nn.Module):
         self.dbpedia_edge_idx = args.dbpedia_edge_list[:, :2].t()
         self.dbpedia_edge_type = args.dbpedia_edge_list[:, 2]
         self.concept_edge_sets = args.concept_edge_sets
-        self.dbpedia_RGCN = RGCNConv(self.n_dbpedia, self.hidden_dim, self.n_relations, num_bases=self.n_bases)
+        self.dbpedia_RGCN = RGCNConv(self.n_dbpedia+self.n_user, self.hidden_dim, self.n_relations, num_bases=self.n_bases)
         self.concept_embeddings = nn.Embedding(self.n_concept, self.hidden_dim)
         # rec_loss部分的参数
         self.con_graph_attn = SelfAttentionLayer_batch(self.hidden_dim, self.hidden_dim)
         self.db_graph_attn = SelfAttentionLayer(self.hidden_dim, self.hidden_dim)
-        self.user_fc = nn.Linear(self.hidden_dim * 2, self.hidden_dim)
+        self.user_fc = nn.Linear(self.hidden_dim * 3, self.hidden_dim)
         self.gate_fc = nn.Linear(self.hidden_dim, 1)
         self.rec_output = nn.Linear(self.hidden_dim, self.n_dbpedia)
         self.criterion_loss = nn.CrossEntropyLoss(reduce=False)
@@ -228,7 +235,7 @@ class Bert4KGModel(nn.Module):
         self.mood_attn = SelfAttentionLayer(self.embedding_size, self.embedding_size)
         self.mood_attn_fc = nn.Linear(self.embedding_size, self.n_mood)
         self.mood_embeddings = nn.Embedding(self.n_mood, self.embedding_size)
-        self.word_embeddings = nn.Embedding(self.vocab_size , self.embedding_size, self.special_wordIdx['<pad>'])
+        self.word_embeddings = nn.Embedding(self.vocab_size, self.embedding_size, self.special_wordIdx['<pad>'])
         self.word_embeddings.weight.data.copy_(torch.from_numpy(self.word2wordEmb))
         nn.init.normal_(self.concept_embeddings.weight, mean=0, std=self.embedding_size ** -0.5)
         nn.init.constant_(self.concept_embeddings.weight[self.special_wordIdx['<pad>']], 0)
@@ -249,18 +256,19 @@ class Bert4KGModel(nn.Module):
         self.db_graph_fc = nn.Linear(self.hidden_dim, self.embedding_size)
         self.con_graph_attn_fc = nn.Linear(self.hidden_dim, self.embedding_size)
         self.db_graph_attn_fc = nn.Linear(self.hidden_dim, self.embedding_size)
-        self.graph_latent_fc = nn.Linear(3*self.embedding_size, self.embedding_size)
+        self.graph_latent_fc = nn.Linear(3 * self.embedding_size, self.embedding_size)
         self.graph_latent_gen_fc = nn.Linear(self.embedding_size, self.vocab_size)
         for name, param in self.named_parameters():
             print(f"Module: {name}, Parameters: {param.numel()}")
         total_params = sum(p.numel() for p in self.parameters())
         print(f"Total parameters in the model: {total_params}")
 
-
-    def forward(self, userIdx, dbpediaId, dbpedia_rating, context_vector, context_mask, context_pos, context_vm, concept_mentioned, dbpedia_mentioned, related_mentioned, relation_mentioned, user_mentioned, response_vector, response_mask, response_pos, response_vm, concept_vector, dbpedia_vector):
+    def forward(self, userIdx, dbpediaId, context_vector, context_mask, context_pos, context_vm, concept_mentioned, dbpedia_mentioned, related_mentioned, relation_mentioned, user_mentioned, response_vector, response_mask, response_pos, response_vm, concept_vector, dbpedia_vector):
         # context_pos context_vm 
         con_nodes_features = self.concept_GCN(self.concept_embeddings.weight, self.concept_edge_sets)
-        db_nodes_features = self.dbpedia_RGCN(None, self.dbpedia_edge_idx, self.dbpedia_edge_type)
+        dbpedia_nodes_features = self.dbpedia_RGCN(None, self.dbpedia_edge_idx, self.dbpedia_edge_type)
+        db_nodes_features = dbpedia_nodes_features[:-self.n_user]
+        user_nodes_features = dbpedia_nodes_features[-self.n_user:]
         dbpedias_emb_list = []
         db_con_mask = []
         for i, dbpedias in enumerate(dbpedia_mentioned):
@@ -275,80 +283,80 @@ class Bert4KGModel(nn.Module):
         db_graph_attn_emb = torch.stack(dbpedias_emb_list)
         db_con_mask = torch.stack(db_con_mask)
         con_graph_emb = con_nodes_features[concept_mentioned]
-        con_graph_attn_emb = self.con_graph_attn(con_graph_emb,concept_mentioned!=0)
+        con_graph_attn_emb = self.con_graph_attn(con_graph_emb, concept_mentioned != 0)
         # 通过user_emb和db_nodes_features计算rec_scores，对比labels得到rec_loss
         con_scores = F.linear(self.db_info_fc(db_graph_attn_emb), con_nodes_features, self.con_output.bias)
         db_scores = F.linear(self.con_info_fc(con_graph_attn_emb), db_nodes_features, self.db_output.bias)
-        info_db_loss = torch.mean(torch.sum(self.mse_loss(db_scores, dbpedia_vector.float()),dim=-1)*db_con_mask)
-        info_con_loss = torch.mean(torch.sum(self.mse_loss(con_scores, concept_vector.float()),dim=-1)*db_con_mask)
+        info_db_loss = torch.mean(torch.sum(self.mse_loss(db_scores, dbpedia_vector.float()), dim=-1) * db_con_mask)
+        info_con_loss = torch.mean(torch.sum(self.mse_loss(con_scores, concept_vector.float()), dim=-1) * db_con_mask)
         info_loss = info_db_loss
         # 通过user_emb和db_nodes_features计算rec_scores，对比labels得到rec_loss
-        uc_gate = F.sigmoid(self.gate_fc(self.user_fc(torch.cat([con_graph_attn_emb, db_graph_attn_emb], dim=-1))))
+        uc_gate = F.sigmoid(self.gate_fc(self.user_fc(torch.cat([user_nodes_features[userIdx], con_graph_attn_emb, db_graph_attn_emb], dim=-1))))
         user_emb = uc_gate * db_graph_attn_emb + (1 - uc_gate) * con_graph_attn_emb
         rec_scores = F.linear(user_emb, db_nodes_features, self.rec_output.bias)
-        rec_loss = torch.mean(self.criterion_loss(rec_scores, dbpediaId)*torch.tensor([1 if rating !=-1 else 0 for rating in dbpedia_rating]).float().to(self.device))
+        rec_loss = torch.mean(self.criterion_loss(rec_scores, dbpediaId) * torch.tensor([1 if dbpediaid != 0 else 0 for dbpediaid in dbpediaId]).float().to(self.device))
         # 计算gen_scores和preds--------可以把历史记录的movie_fc加上--------------------|##|Aab******#|Bc******#|Ac******#|Bc********#|-------------
         db_graph_fc_emb = self.db_graph_fc(db_nodes_features[dbpedia_mentioned])
         db_graph_attn_fc_emb = self.db_graph_attn_fc(db_graph_attn_emb)
         con_graph_fc_emb = self.con_graph_fc(con_nodes_features[concept_mentioned])
         con_graph_attn_fc_emb = self.con_graph_attn_fc(con_graph_attn_emb)
         context_emb = self.word_embeddings(context_vector)
-        self.movie_embeddings=self.movie_embeddings_fc(db_nodes_features)
-        lastrow = -1
+        self.movie_embeddings = self.movie_embeddings_fc(db_nodes_features)
+        last_row = -1
         i = -1
         for indice in torch.nonzero(context_mask == self.special_wordIdx['<user>']):
-            if indice[0] == lastrow:
+            if indice[0] == last_row:
                 i += 1
             else:
-                lastrow = indice[0]
+                last_row = indice[0]
                 i = 0
-            context_emb[indice[0], indice[1]] = self.user_embeddings(user_mentioned[indice[0],i])
-        lastrow = -1
+            context_emb[indice[0], indice[1]] = self.user_embeddings(user_mentioned[indice[0], i])
+        last_row = -1
         i = -1
         for indice in torch.nonzero(context_mask == self.special_wordIdx['<movie>']):
-            if indice[0] == lastrow:
+            if indice[0] == last_row:
                 i += 1
             else:
-                lastrow = indice[0]
+                last_row = indice[0]
                 i = 0
-            context_emb[indice[0], indice[1]] = self.movie_embeddings[dbpedia_mentioned[indice[0],i]]
-        lastrow=-1
-        lastcol=-1
-        for indice in torch.nonzero(context_mask==self.special_wordIdx['<mood>']):
-            if indice[0]==lastrow:
-                context_emb[[indice[0], indice[1]]] = self.mood_embeddings(torch.argmax(self.mood_attn_fc(self.mood_attn(context_emb[indice[0],lastcol+1:indice[1]]))))
-                lastcol = indice[1]
+            context_emb[indice[0], indice[1]] = self.movie_embeddings[dbpedia_mentioned[indice[0], i]]
+        last_row = -1
+        last_col = -1
+        for indice in torch.nonzero(context_mask == self.special_wordIdx['<mood>']):
+            if indice[0] == last_row:
+                context_emb[[indice[0], indice[1]]] = self.mood_embeddings(torch.argmax(self.mood_attn_fc(self.mood_attn(context_emb[indice[0], last_col + 1:indice[1]]))))
+                last_col = indice[1]
             else:
-                context_emb[[indice[0], indice[1]]] = self.mood_embeddings(torch.argmax(self.mood_attn_fc(self.mood_attn(context_emb[indice[0],0:indice[1]]))))
-                lastrow=indice[0]
-                lastcol = indice[1]
-        lastrow = -1
+                context_emb[[indice[0], indice[1]]] = self.mood_embeddings(torch.argmax(self.mood_attn_fc(self.mood_attn(context_emb[indice[0], 0:indice[1]]))))
+                last_row = indice[0]
+                last_col = indice[1]
+        last_row = -1
         i = -1
         for indice in torch.nonzero(context_mask == self.special_wordIdx['<dbpedia>']):
-            if indice[0] == lastrow:
+            if indice[0] == last_row:
                 i += 1
             else:
-                lastrow = indice[0]
+                last_row = indice[0]
                 i = 0
-            context_emb[indice[0], indice[1]] = self.movie_embeddings[dbpedia_mentioned[indice[0],i]]
-        lastrow = -1
+            context_emb[indice[0], indice[1]] = self.movie_embeddings[dbpedia_mentioned[indice[0], i]]
+        last_row = -1
         i = -1
         for indice in torch.nonzero(context_mask == self.special_wordIdx['<related>']):
-            if indice[0] == lastrow:
+            if indice[0] == last_row:
                 i += 1
             else:
-                lastrow = indice[0]
+                last_row = indice[0]
                 i = 0
-            context_emb[indice[0], indice[1]] = self.movie_embeddings[related_mentioned[indice[0],i]]
-        lastrow = -1
+            context_emb[indice[0], indice[1]] = self.movie_embeddings[related_mentioned[indice[0], i]]
+        last_row = -1
         i = -1
         for indice in torch.nonzero(context_mask == self.special_wordIdx['<relation>']):
-            if indice[0] == lastrow:
+            if indice[0] == last_row:
                 i += 1
             else:
-                lastrow = indice[0]
+                last_row = indice[0]
                 i = 0
-            context_emb[indice[0], indice[1]] = self.relation_embeddings(relation_mentioned[indice[0],i])
+            context_emb[indice[0], indice[1]] = self.relation_embeddings(relation_mentioned[indice[0], i])
 
         context_emb = context_emb * torch.tensor(np.sqrt(self.embedding_size)).to(self.device) + self.position_embeddings(context_pos) + self.segment_embedding(context_mask)
         context_emb = self.drop(self.layer_norm(context_emb))
@@ -368,34 +376,34 @@ class Bert4KGModel(nn.Module):
         output = torch.tanh(self.encoder_latent_fc(output))
         rec2_scores = self.encoder_latent_rec2_fc(output)
         rec2_scores = F.linear(rec2_scores, db_nodes_features, self.rec2_output.bias)
-        rec2_loss = torch.mean(self.criterion_loss(rec2_scores, dbpediaId)*torch.tensor([1 if rating !=-1 else 0 for rating in dbpedia_rating]).float().to(self.device))
+        rec2_loss = torch.mean(self.criterion_loss(rec2_scores, dbpediaId) * torch.tensor([1 if dbpediaid != 0 else 0 for dbpediaid in dbpediaId]).float().to(self.device))
 
         if response_vector is None:
-            predict_vector = torch.tensor([self.special_wordIdx['<user>'],self.special_wordIdx['<movie>']],dtype=torch.long).expand(self.batch_size,2).to(self.device)
+            predict_vector = torch.tensor([self.special_wordIdx['<user>'], self.special_wordIdx['<movie>']], dtype=torch.long).expand(self.batch_size, 2).to(self.device)
             predict_emb = self.word_embeddings(predict_vector)
-            predict_emb[:,0] = self.user_embeddings(userIdx)
-            predict_emb[:,1] = self.movie_embeddings[dbpediaId]
-            predict_pos = torch.tensor([0, 1],dtype=torch.long).expand(self.batch_size,2).to(self.device)
-            predict_mask = torch.tensor([self.special_wordIdx['<user>'],self.special_wordIdx['<movie>']],dtype=torch.long).expand(self.batch_size,2).to(self.device)
+            predict_emb[:, 0] = self.user_embeddings(userIdx)
+            predict_emb[:, 1] = self.movie_embeddings[dbpediaId]
+            predict_pos = torch.tensor([0, 1], dtype=torch.long).expand(self.batch_size, 2).to(self.device)
+            predict_mask = torch.tensor([self.special_wordIdx['<user>'], self.special_wordIdx['<movie>']], dtype=torch.long).expand(self.batch_size, 2).to(self.device)
             predict_emb = predict_emb * torch.tensor(np.sqrt(self.embedding_size)).to(self.device) + self.position_embeddings(predict_pos) + self.segment_embedding(predict_mask)
             for idx in range(self.max_r_length):
                 predict_emb = self.drop(self.layer_norm(predict_emb))
                 for layer in self.decoder_layers:
                     predict_vm = torch.ones(predict_emb.size(0), predict_emb.size(1), predict_emb.size(1))
-                    predict_emb = layer(predict_emb, torch.tril(predict_vm).to(self.device), encoder_latent, context_mask!=self.special_wordIdx['<pad>'], con_graph_fc_emb, concept_mentioned != 0, db_graph_fc_emb, dbpedia_mentioned != 0)
-                decoder_latent = predict_emb[:,-1:,:]
+                    predict_emb = layer(predict_emb, torch.tril(predict_vm).to(self.device), encoder_latent, context_mask != self.special_wordIdx['<pad>'], con_graph_fc_emb, concept_mentioned != 0, db_graph_fc_emb, dbpedia_mentioned != 0)
+                decoder_latent = predict_emb[:, -1:, :]
                 graph_latent = self.graph_latent_fc(torch.cat([con_graph_attn_fc_emb.unsqueeze(1), db_graph_attn_fc_emb.unsqueeze(1), decoder_latent], -1))
                 gen_scores = F.linear(decoder_latent, self.word_embeddings.weight) + self.graph_latent_gen_fc(graph_latent)
-                _,last_token = gen_scores.max(dim=-1)
-                predict_emb = torch.cat([predict_emb,self.word_embeddings(last_token)* torch.tensor(np.sqrt(self.embedding_size)).to(self.device)+self.position_embeddings(torch.tensor(predict_emb.shape[1]-1,dtype=torch.long).expand(self.batch_size,1).to(self.device)) + self.segment_embedding(torch.tensor(self.special_wordIdx['<concept>'],dtype=torch.long).expand(self.batch_size,1).to(self.device))],dim=1)
-                predict_vector = torch.cat([predict_vector, last_token],dim=1)
+                _, last_token = gen_scores.max(dim=-1)
+                predict_emb = torch.cat([predict_emb, self.word_embeddings(last_token) * torch.tensor(np.sqrt(self.embedding_size)).to(self.device) + self.position_embeddings(torch.tensor(predict_emb.shape[1] - 1, dtype=torch.long).expand(self.batch_size, 1).to(self.device)) + self.segment_embedding(torch.tensor(self.special_wordIdx['<concept>'], dtype=torch.long).expand(self.batch_size, 1).to(self.device))], dim=1)
+                predict_vector = torch.cat([predict_vector, last_token], dim=1)
                 if ((predict_vector == self.special_wordIdx['<eos>']).sum(dim=1) > 0).sum().item() == self.batch_size:
                     break
             gen_loss = None
         else:
             response_emb = self.word_embeddings(response_vector)
-            response_emb[:,0] = self.user_embeddings(userIdx)
-            response_emb[:,1] = self.movie_embeddings[dbpediaId]
+            response_emb[:, 0] = self.user_embeddings(userIdx)
+            response_emb[:, 1] = self.movie_embeddings[dbpediaId]
             response_emb = response_emb * torch.tensor(np.sqrt(self.embedding_size)).to(self.device) + self.position_embeddings(response_pos) + self.segment_embedding(response_mask)
             response_emb = self.drop(self.layer_norm(response_emb))
             for layer in self.decoder_layers:
@@ -409,36 +417,26 @@ class Bert4KGModel(nn.Module):
 
     def freeze_kg(self, freezeKG):
         if freezeKG:
-            params = [self.dbpedia_RGCN.parameters(), self.concept_GCN.parameters(),
-                      self.concept_embeddings.parameters(),
-                      self.con_graph_attn.parameters(), self.db_graph_attn.parameters(), self.user_fc.parameters(),
-                      self.user_fc.parameters(), self.rec_output.parameters()]
+            params = [self.dbpedia_RGCN.parameters(), self.concept_GCN.parameters(), self.concept_embeddings.parameters(), self.con_graph_attn.parameters(), self.db_graph_attn.parameters(), self.user_fc.parameters(), self.user_fc.parameters(), self.rec_output.parameters()]
             for param in params:
                 for pa in param:
                     pa.requires_grad = False
             print(f"Freeze parameters in the model")
         else:
-            params = [self.dbpedia_RGCN.parameters(), self.concept_GCN.parameters(),
-                      self.concept_embeddings.parameters(),
-                      self.con_graph_attn.parameters(), self.db_graph_attn.parameters(), self.user_fc.parameters(),
-                      self.user_fc.parameters(), self.rec_output.parameters()]
+            params = [self.dbpedia_RGCN.parameters(), self.concept_GCN.parameters(), self.concept_embeddings.parameters(), self.con_graph_attn.parameters(), self.db_graph_attn.parameters(), self.user_fc.parameters(), self.user_fc.parameters(), self.rec_output.parameters()]
             for param in params:
                 for pa in param:
                     pa.requires_grad = True
             print(f"UnFreeze parameters in the model")
 
     def save_model(self, tag):
-        if tag=="rec":
+        if tag == "rec":
             torch.save(self.state_dict(), 'rec_net_parameter.pkl')
         else:
             torch.save(self.state_dict(), 'gen_net_parameter.pkl')
 
     def load_model(self, tag):
-        if tag=="rec":
-            self.load_state_dict(torch.load('rec_net_parameter.pkl'), strict=False)  
+        if tag == "rec":
+            self.load_state_dict(torch.load('rec_net_parameter.pkl'), strict=False)
         else:
             self.load_state_dict(torch.load('gen_net_parameter.pkl'), strict=False)
-
-
-
-
