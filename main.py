@@ -137,7 +137,7 @@ class TrainLoop:
                         sentence.append('_UNK_')
                     if word == self.special_wordIdx['<dbpedia>']:
                         sentence.append('_DBPEDIA_')
-                    elif word > len(self.special_wordIdx):
+                    elif word >= len(self.special_wordIdx):
                         sentence.append(self.wordIdx2word[word])
                 sentences.append(sentence)
             return sentences

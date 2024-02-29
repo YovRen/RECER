@@ -185,22 +185,39 @@ class CRSDataset(Dataset):
                         for relate in relates:
                             response_pos += relate
                     response_pos = np.array((response_pos + [self.max_r_length - 1] * (self.max_r_length - len(response_pos)))[:self.max_r_length])
+                    # 构建可视矩阵
                     context_vm = np.zeros((history_abs_idx + 1, history_abs_idx + 1))
+                    history_dbpedia_count = []
                     for src_id, relates in history_abs_idx_tree:
                         context_vm[src_id, history_abs_idx_src + [idx for relate in relates for idx in relate]] = 1
                         for relate in relates:
+                            history_dbpedia_count_len = len(history_dbpedia_count)
+                            for i, (epoch_src_id, epoch_relates) in enumerate(history_dbpedia_count):
+                                for epoch_relate in epoch_relates:
+                                    context_vm[relate[0], epoch_relate + [epoch_src_id]] = 0.9**(history_dbpedia_count_len-i)
+                                    context_vm[relate[1], epoch_relate + [epoch_src_id]] = 0.9**(history_dbpedia_count_len-i)
                             context_vm[relate[0], relate + [src_id]] = 1
                             context_vm[relate[1], relate + [src_id]] = 1
+                        if len(relates)>0:
+                            history_dbpedia_count.append((src_id, relates))
                     if history_abs_idx < self.max_c_length:
                         context_vm = np.pad(context_vm, ((0, self.max_c_length - history_abs_idx - 1), (0, self.max_c_length - history_abs_idx - 1)), 'constant')
                     else:
                         context_vm = context_vm[:self.max_c_length, :self.max_c_length]
                     response_vm = np.zeros((message_dict['abs_idx'] + 1, message_dict['abs_idx'] + 1))
+                    history_dbpedia_count = []
                     for src_id, relates in message_dict['abs_idx_tree']:
                         response_vm[src_id, message_dict['abs_idx_src'] + [idx for relate in relates for idx in relate]] = 1
                         for relate in relates:
+                            history_dbpedia_count_len = len(history_dbpedia_count)
+                            for i, (epoch_src_id, epoch_relates) in enumerate(history_dbpedia_count):
+                                for epoch_relate in epoch_relates:
+                                    response_vm[relate[0], epoch_relate + [epoch_src_id]] = 0.9 ** (history_dbpedia_count_len - i)
+                                    response_vm[relate[1], epoch_relate + [epoch_src_id]] = 0.9 ** (history_dbpedia_count_len - i)
                             response_vm[relate[0], relate + [src_id]] = 1
                             response_vm[relate[1], relate + [src_id]] = 1
+                        if len(relates) > 0:
+                            history_dbpedia_count.append((src_id, relates))
                     if message_dict['abs_idx'] < self.max_r_length:
                         response_vm = np.pad(response_vm, ((0, self.max_r_length - message_dict['abs_idx'] - 1), (0, self.max_r_length - message_dict['abs_idx'] - 1)), 'constant')
                     else:
