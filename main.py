@@ -19,7 +19,7 @@ class TrainLoop:
         self.learning_rate = 0.001
         self.gradient_clip = 0.1
         self.optimizer = 'adam'
-        self.device = 'cpu'
+        self.device = 'cuda'
         self.n_user = 1075
         self.n_concept = 24401
         self.n_mood = 5
@@ -227,5 +227,5 @@ class TrainLoop:
 if __name__ == '__main__':
     loop = TrainLoop()
     # loop.model.load_model('rec')
-    loop.train(rec_epoch=1, gen_epoch=1)
+    # loop.train(rec_epoch=1, gen_epoch=1)
     met = loop.val(is_test=True)

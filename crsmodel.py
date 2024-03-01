@@ -387,12 +387,11 @@ class Bert4KGModel(nn.Module):
         rec2_loss = torch.mean(self.criterion_loss(rec2_scores, dbpediaId) * torch.tensor([1 if dbpediaid != 0 else 0 for dbpediaid in dbpediaId]).float().to(self.device))
 
         if response_vector is None:
-            predict_vector = torch.tensor([self.special_wordIdx['<user>'], self.special_wordIdx['<movie>']], dtype=torch.long).expand(self.batch_size, 2).to(self.device)
+            predict_vector = torch.tensor([self.special_wordIdx['<user>']], dtype=torch.long).expand(self.batch_size, 1).to(self.device)
             predict_emb = self.word_embeddings(predict_vector)
             predict_emb[:, 0] = user_embeddings[userIdx]
-            predict_emb[:, 1] = dbpedia_embeddings[dbpediaId]
-            predict_pos = torch.tensor([0, 1], dtype=torch.long).expand(self.batch_size, 2).to(self.device)
-            predict_mask = torch.tensor([self.special_wordIdx['<user>'], self.special_wordIdx['<movie>']], dtype=torch.long).expand(self.batch_size, 2).to(self.device)
+            predict_pos = torch.tensor([0], dtype=torch.long).expand(self.batch_size, 1).to(self.device)
+            predict_mask = torch.tensor([self.special_wordIdx['<user>']], dtype=torch.long).expand(self.batch_size, 1).to(self.device)
             predict_emb = predict_emb * torch.tensor(np.sqrt(self.embedding_size)).to(self.device) + self.position_embeddings(predict_pos) + self.segment_embedding(predict_mask)
             for idx in range(self.max_r_length):
                 predict_emb = self.drop(self.layer_norm(predict_emb))
@@ -403,15 +402,79 @@ class Bert4KGModel(nn.Module):
                 graph_latent = self.graph_latent_fc(torch.cat([con_graph_attn_fc_emb.unsqueeze(1), db_graph_attn_fc_emb.unsqueeze(1), decoder_latent], -1))
                 gen_scores = F.linear(decoder_latent, torch.cat([concept_embeddings, self.word_embeddings.weight], dim=0)) + self.graph_latent_gen_fc(graph_latent)
                 _, last_token = gen_scores.max(dim=-1)
-                predict_emb = torch.cat([predict_emb, self.word_embeddings(last_token) * torch.tensor(np.sqrt(self.embedding_size)).to(self.device) + self.position_embeddings(torch.tensor(predict_emb.shape[1] - 1, dtype=torch.long).expand(self.batch_size, 1).to(self.device)) + self.segment_embedding(torch.tensor(self.special_wordIdx['<concept>'], dtype=torch.long).expand(self.batch_size, 1).to(self.device))], dim=1)
+                last_emb = self.word_embeddings(last_token)
+                last_row = -1
+                i = -1
+                for indice in torch.nonzero(last_token < self.n_concept):
+                    if indice[0] == last_row:
+                        i += 1
+                    else:
+                        last_row = indice[0]
+                        i = 0
+                    last_emb[indice[0], indice[1]] = concept_embeddings(concept_mentioned[indice[0], i])
+                predict_emb = torch.cat([predict_emb, last_emb * torch.tensor(np.sqrt(self.embedding_size)).to(self.device) + self.position_embeddings(torch.tensor(predict_emb.shape[1] - 1, dtype=torch.long).expand(self.batch_size, 1).to(self.device)) + self.segment_embedding(torch.tensor(self.special_wordIdx['<concept>'], dtype=torch.long).expand(self.batch_size, 1).to(self.device))], dim=1)
                 predict_vector = torch.cat([predict_vector, last_token], dim=1)
                 if ((predict_vector == self.special_wordIdx['<eos>']).sum(dim=1) > 0).sum().item() == self.batch_size:
                     break
             gen_loss = None
         else:
             response_emb = self.word_embeddings(response_vector)
-            response_emb[:, 0] = user_embeddings[userIdx]
-            response_emb[:, 1] = dbpedia_embeddings[dbpediaId]
+            last_row = -1
+            i = -1
+            for indice in torch.nonzero(response_mask == self.special_wordIdx['<user>']):
+                if indice[0] == last_row:
+                    i += 1
+                else:
+                    last_row = indice[0]
+                    i = 0
+                response_emb[indice[0], indice[1]] = user_embeddings[user_mentioned[indice[0], i]]
+            last_row = -1
+            i = -1
+            for indice in torch.nonzero(response_mask == self.special_wordIdx['<concept>']):
+                if indice[0] == last_row:
+                    i += 1
+                else:
+                    last_row = indice[0]
+                    i = 0
+                response_emb[indice[0], indice[1]] = concept_embeddings[concept_mentioned[indice[0], i]]
+            last_row = -1
+            i = -1
+            for indice in torch.nonzero(response_mask == self.special_wordIdx['<dbpedia>']):
+                if indice[0] == last_row:
+                    i += 1
+                else:
+                    last_row = indice[0]
+                    i = 0
+                response_emb[indice[0], indice[1]] = dbpedia_embeddings[dbpedia_mentioned[indice[0], i]]
+            last_row = -1
+            i = -1
+            for indice in torch.nonzero(response_mask == self.special_wordIdx['<related>']):
+                if indice[0] == last_row:
+                    i += 1
+                else:
+                    last_row = indice[0]
+                    i = 0
+                response_emb[indice[0], indice[1]] = dbpedia_embeddings[related_mentioned[indice[0], i]]
+            last_row = -1
+            i = -1
+            for indice in torch.nonzero(response_mask == self.special_wordIdx['<relation>']):
+                if indice[0] == last_row:
+                    i += 1
+                else:
+                    last_row = indice[0]
+                    i = 0
+                response_emb[indice[0], indice[1]] = self.relation_embeddings(relation_mentioned[indice[0], i])
+            last_row = -1
+            last_col = -1
+            for indice in torch.nonzero(response_mask == self.special_wordIdx['<mood>']):
+                if indice[0] == last_row:
+                    response_emb[[indice[0], indice[1]]] = self.mood_embeddings(torch.argmax(self.mood_attn_fc(self.mood_attn(response_emb[indice[0], last_col + 1:indice[1]]))))
+                    last_col = indice[1]
+                else:
+                    response_emb[[indice[0], indice[1]]] = self.mood_embeddings(torch.argmax(self.mood_attn_fc(self.mood_attn(response_emb[indice[0], 0:indice[1]]))))
+                    last_row = indice[0]
+                    last_col = indice[1]
+                    
             response_emb = response_emb * torch.tensor(np.sqrt(self.embedding_size)).to(self.device) + self.position_embeddings(response_pos) + self.segment_embedding(response_mask)
             response_emb = self.drop(self.layer_norm(response_emb))
             for layer in self.decoder_layers:
