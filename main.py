@@ -21,8 +21,8 @@ class TrainLoop:
         self.optimizer = 'adam'
         self.device = 'cpu'
         self.n_user = 1075
-        self.n_concept = 29308
-        self.n_mood = 10
+        self.n_concept = 24401
+        self.n_mood = 5
         self.n_dbpedia = 64363
         self.n_relations = 64  # 46+18
         self.n_bases = 8
@@ -46,11 +46,11 @@ class TrainLoop:
         self.concept_edges = open(self.crs_data_path + '/concept_edges.txt', encoding='utf-8')
         self.stopwords = set([word.strip() for word in open(self.crs_data_path + '/stopwords.txt', encoding='utf-8')])
         self.word2wordIdx = json.load(open(self.crs_data_path + '/redial_word2wordIdx.jsonl', encoding='utf-8'))
-        # self.wordIdx2word = json.load(open(self.crs_data_path + '/redial_wordIdx2word.jsonl', encoding='utf-8'))
         self.dbpedia_subkg = json.load(open(self.crs_data_path + '/dbpedia_subkg.jsonl', encoding='utf-8'))
         self.wordIdx2word = {self.word2wordIdx[key]: key for key in self.word2wordIdx}
+        self.conceptIdx2concept = {self.concept2conceptIdx[key]: key for key in self.concept2conceptIdx}
         self.word2wordEmb = np.load(self.crs_data_path + '/redial_word2wordEmb.npy')
-        self.special_wordIdx = {'<pad>': 0, '<dbpedia>': 1, '<concept>': 2, '<unk>': 3, '<split>': 4, '<user>': 5, '<movie>': 6, '<mood>': 7, '<eos>': 8, '<related>': 9, '<relation>': 10}
+        self.special_wordIdx = {'<pad>': 0, '<dbpedia>': 1, '<related>': 2, '<relation>': 3, '<concept>': 4, '<word>': 5, '<unk>': 6, '<user>': 7, '<mood>': 8, '<split>': 9, '<eos>': 10}
         self.vocab_size = len(self.word2wordIdx) + len(self.special_wordIdx)
         self.train_dataset = CRSDataset('toy_train', self)
         self.valid_dataset = CRSDataset('toy_valid', self)
@@ -133,11 +133,13 @@ class TrainLoop:
             for sen in batch_sen.numpy().tolist():
                 sentence = []
                 for word in sen:
-                    if word == self.special_wordIdx['<unk>']:
+                    if word < self.n_concept:
+                        sentence.append(self.conceptIdx2concept[word])
+                    elif word == self.n_concept + self.special_wordIdx['<unk>']:
                         sentence.append('_UNK_')
-                    if word == self.special_wordIdx['<dbpedia>']:
+                    elif word == self.n_concept + self.special_wordIdx['<dbpedia>']:
                         sentence.append('_DBPEDIA_')
-                    elif word >= len(self.special_wordIdx):
+                    elif word >= self.n_concept + len(self.special_wordIdx):
                         sentence.append(self.wordIdx2word[word])
                 sentences.append(sentence)
             return sentences
