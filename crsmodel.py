@@ -234,6 +234,7 @@ class Bert4KGModel(nn.Module):
         # encoder预处理部分的参数
         self.user_embeddings_fc = nn.Linear(self.hidden_dim, self.embedding_size)
         self.dbpedia_embeddings_fc = nn.Linear(self.hidden_dim, self.embedding_size)
+        self.concept_embeddings_fc = nn.Linear(self.hidden_dim, self.embedding_size)
         self.relation_embeddings = nn.Embedding(self.n_relations, self.embedding_size)
         self.mood_attn = SelfAttentionLayer(self.embedding_size, self.embedding_size)
         self.mood_attn_fc = nn.Linear(self.embedding_size, self.n_mood)
@@ -309,6 +310,7 @@ class Bert4KGModel(nn.Module):
         context_emb = self.word_embeddings(context_vector)
         dbpedia_embeddings = self.dbpedia_embeddings_fc(db_nodes_features)
         user_embeddings = self.user_embeddings_fc(user_nodes_features)
+        concept_embeddings = self.concept_embeddings_fc(con_nodes_features)
         last_row = -1
         i = -1
         for indice in torch.nonzero(context_mask == self.special_wordIdx['<user>']):
@@ -327,16 +329,13 @@ class Bert4KGModel(nn.Module):
                 last_row = indice[0]
                 i = 0
             context_emb[indice[0], indice[1]] = dbpedia_embeddings[dbpedia_mentioned[indice[0], i]]
-        last_row = -1
-        last_col = -1
-        for indice in torch.nonzero(context_mask == self.special_wordIdx['<mood>']):
+        for indice in torch.nonzero(context_mask == self.special_wordIdx['<concept>']):
             if indice[0] == last_row:
-                context_emb[[indice[0], indice[1]]] = self.mood_embeddings(torch.argmax(self.mood_attn_fc(self.mood_attn(context_emb[indice[0], last_col + 1:indice[1]]))))
-                last_col = indice[1]
+                i += 1
             else:
-                context_emb[[indice[0], indice[1]]] = self.mood_embeddings(torch.argmax(self.mood_attn_fc(self.mood_attn(context_emb[indice[0], 0:indice[1]]))))
                 last_row = indice[0]
-                last_col = indice[1]
+                i = 0
+            context_emb[indice[0], indice[1]] = concept_embeddings[concept_mentioned[indice[0], i]]
         last_row = -1
         i = -1
         for indice in torch.nonzero(context_mask == self.special_wordIdx['<dbpedia>']):
@@ -364,6 +363,16 @@ class Bert4KGModel(nn.Module):
                 last_row = indice[0]
                 i = 0
             context_emb[indice[0], indice[1]] = self.relation_embeddings(relation_mentioned[indice[0], i])
+        last_row = -1
+        last_col = -1
+        for indice in torch.nonzero(context_mask == self.special_wordIdx['<mood>']):
+            if indice[0] == last_row:
+                context_emb[[indice[0], indice[1]]] = self.mood_embeddings(torch.argmax(self.mood_attn_fc(self.mood_attn(context_emb[indice[0], last_col + 1:indice[1]]))))
+                last_col = indice[1]
+            else:
+                context_emb[[indice[0], indice[1]]] = self.mood_embeddings(torch.argmax(self.mood_attn_fc(self.mood_attn(context_emb[indice[0], 0:indice[1]]))))
+                last_row = indice[0]
+                last_col = indice[1]
 
         context_emb = context_emb * torch.tensor(np.sqrt(self.embedding_size)).to(self.device) + self.position_embeddings(context_pos) + self.segment_embedding(context_mask)
         context_emb = self.drop(self.layer_norm(context_emb))

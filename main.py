@@ -52,8 +52,8 @@ class TrainLoop:
         self.word2wordEmb = np.load(self.crs_data_path + '/redial_word2wordEmb.npy')
         self.special_wordIdx = {'<pad>': 0, '<dbpedia>': 1, '<concept>': 2, '<unk>': 3, '<split>': 4, '<user>': 5, '<movie>': 6, '<mood>': 7, '<eos>': 8, '<related>': 9, '<relation>': 10}
         self.vocab_size = len(self.word2wordIdx) + len(self.special_wordIdx)
-        self.train_dataset = CRSDataset('toy_test', self)
-        self.valid_dataset = CRSDataset('toy_test', self)
+        self.train_dataset = CRSDataset('toy_train', self)
+        self.valid_dataset = CRSDataset('toy_valid', self)
         self.test_dataset = CRSDataset('toy_test', self)
         # self.train_dataset = CRSDataset('train', self)
         # self.valid_dataset = CRSDataset('valid', self)
