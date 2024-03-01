@@ -402,17 +402,14 @@ class Bert4KGModel(nn.Module):
                 graph_latent = self.graph_latent_fc(torch.cat([con_graph_attn_fc_emb.unsqueeze(1), db_graph_attn_fc_emb.unsqueeze(1), decoder_latent], -1))
                 gen_scores = F.linear(decoder_latent, torch.cat([concept_embeddings, self.word_embeddings.weight], dim=0)) + self.graph_latent_gen_fc(graph_latent)
                 _, last_token = gen_scores.max(dim=-1)
-                last_emb = self.word_embeddings(last_token)
-                last_row = -1
-                i = -1
-                for indice in torch.nonzero(last_token < self.n_concept):
-                    if indice[0] == last_row:
-                        i += 1
+                last_emb = []
+                for last_toke in last_token:
+                    if last_toke <self.n_concept:
+                        last_emb.append((concept_embeddings[last_toke]))
                     else:
-                        last_row = indice[0]
-                        i = 0
-                    last_emb[indice[0], indice[1]] = concept_embeddings(concept_mentioned[indice[0], i])
-                predict_emb = torch.cat([predict_emb, last_emb * torch.tensor(np.sqrt(self.embedding_size)).to(self.device) + self.position_embeddings(torch.tensor(predict_emb.shape[1] - 1, dtype=torch.long).expand(self.batch_size, 1).to(self.device)) + self.segment_embedding(torch.tensor(self.special_wordIdx['<concept>'], dtype=torch.long).expand(self.batch_size, 1).to(self.device))], dim=1)
+                        last_emb.append(self.word_embeddings(last_toke-self.n_concept))
+                last_emb = torch.cat(last_emb,dim=0)
+                predict_emb = torch.cat([predict_emb, (last_emb * torch.tensor(np.sqrt(self.embedding_size))).unsqueeze(1).to(self.device) + self.position_embeddings(torch.tensor(predict_emb.shape[1] - 1, dtype=torch.long).expand(self.batch_size, 1).to(self.device)) + self.segment_embedding(torch.tensor(self.special_wordIdx['<concept>'], dtype=torch.long).expand(self.batch_size, 1).to(self.device))], dim=1)
                 predict_vector = torch.cat([predict_vector, last_token], dim=1)
                 if ((predict_vector == self.special_wordIdx['<eos>']).sum(dim=1) > 0).sum().item() == self.batch_size:
                     break

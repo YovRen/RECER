@@ -19,7 +19,7 @@ class TrainLoop:
         self.learning_rate = 0.001
         self.gradient_clip = 0.1
         self.optimizer = 'adam'
-        self.device = 'cuda'
+        self.device = 'cpu'
         self.n_user = 1075
         self.n_concept = 24401
         self.n_mood = 5
@@ -140,7 +140,7 @@ class TrainLoop:
                     elif word == self.n_concept + self.special_wordIdx['<dbpedia>']:
                         sentence.append('_DBPEDIA_')
                     elif word >= self.n_concept + len(self.special_wordIdx):
-                        sentence.append(self.wordIdx2word[word])
+                        sentence.append(self.wordIdx2word[word-self.n_concept])
                 sentences.append(sentence)
             return sentences
 
