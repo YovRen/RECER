@@ -245,7 +245,6 @@ class Bert4KGModel(nn.Module):
         nn.init.constant_(self.concept_embeddings.weight[self.special_wordIdx['<pad>']], 0)
         self.position_embeddings = nn.Embedding(self.max_c_length, self.embedding_size)
         nn.init.normal_(self.position_embeddings.weight, 0, self.embedding_size ** -0.5)
-        self.segment_embedding = nn.Embedding(len(self.special_wordIdx), self.embedding_size)
         self.layer_norm = nn.LayerNorm(self.embedding_size)
         self.drop = nn.Dropout(self.dropout)
         # rec2_loss部分的参数
@@ -262,13 +261,13 @@ class Bert4KGModel(nn.Module):
         self.con_graph_attn_fc = nn.Linear(self.hidden_dim, self.embedding_size)
         self.db_graph_attn_fc = nn.Linear(self.hidden_dim, self.embedding_size)
         self.graph_latent_fc = nn.Linear(3 * self.embedding_size, self.embedding_size)
-        self.graph_latent_gen_fc = nn.Linear(self.embedding_size, self.vocab_size + self.n_concept)
+        self.graph_latent_gen_fc = nn.Linear(self.embedding_size, self.vocab_size + self.n_concept + self.n_dbpedia + self.n_relations)
         for name, param in self.named_parameters():
             print(f"Module: {name}, Parameters: {param.numel()}")
         total_params = sum(p.numel() for p in self.parameters())
         print(f"Total parameters in the model: {total_params}")
 
-    def forward(self, userIdx, dbpediaId, context_vector, context_mask, context_pos, context_vm, concept_mentioned, dbpedia_mentioned, related_mentioned, relation_mentioned, user_mentioned, response_vector, response_mask, response_pos, response_vm, concept_vector, dbpedia_vector):
+    def forward(self, userIdx, dbpediaId, context_vector, context_mask, context_pos, context_vm, concept_mentioned, dbpedia_mentioned, user_mentioned, response_vector, response_mask, response_pos, response_vm, concept_vector, dbpedia_vector):
         # context_pos context_vm 
         con_nodes_features = self.concept_GCN(self.concept_embeddings.weight, self.concept_edge_sets)
         dbpedia_nodes_features = self.dbpedia_RGCN(None, self.dbpedia_edge_idx, self.dbpedia_edge_type)
@@ -310,7 +309,8 @@ class Bert4KGModel(nn.Module):
         dbpedia_embeddings = self.dbpedia_embeddings_fc(db_nodes_features)
         user_embeddings = self.user_embeddings_fc(user_nodes_features)
         concept_embeddings = self.concept_embeddings_fc(con_nodes_features)
-        context_emb = self.word_embeddings(context_vector)
+        sum_embeddings = torch.cat([self.word_embeddings.weight, concept_embeddings, dbpedia_embeddings, self.relation_embeddings.weight], dim=0)
+        context_emb = sum_embeddings[context_vector]
         last_row = -1
         i = -1
         for indice in torch.nonzero(context_mask == self.special_wordIdx['<user>']):
@@ -321,42 +321,6 @@ class Bert4KGModel(nn.Module):
                 i = 0
             context_emb[indice[0], indice[1]] = user_embeddings[user_mentioned[indice[0], i]]
         last_row = -1
-        i = -1
-        for indice in torch.nonzero(context_mask == self.special_wordIdx['<concept>']):
-            if indice[0] == last_row:
-                i += 1
-            else:
-                last_row = indice[0]
-                i = 0
-            context_emb[indice[0], indice[1]] = concept_embeddings[concept_mentioned[indice[0], i]]
-        last_row = -1
-        i = -1
-        for indice in torch.nonzero(context_mask == self.special_wordIdx['<dbpedia>']):
-            if indice[0] == last_row:
-                i += 1
-            else:
-                last_row = indice[0]
-                i = 0
-            context_emb[indice[0], indice[1]] = dbpedia_embeddings[dbpedia_mentioned[indice[0], i]]
-        last_row = -1
-        i = -1
-        for indice in torch.nonzero(context_mask == self.special_wordIdx['<related>']):
-            if indice[0] == last_row:
-                i += 1
-            else:
-                last_row = indice[0]
-                i = 0
-            context_emb[indice[0], indice[1]] = dbpedia_embeddings[related_mentioned[indice[0], i]]
-        last_row = -1
-        i = -1
-        for indice in torch.nonzero(context_mask == self.special_wordIdx['<relation>']):
-            if indice[0] == last_row:
-                i += 1
-            else:
-                last_row = indice[0]
-                i = 0
-            context_emb[indice[0], indice[1]] = self.relation_embeddings(relation_mentioned[indice[0], i])
-        last_row = -1
         last_col = -1
         for indice in torch.nonzero(context_mask == self.special_wordIdx['<mood>']):
             if indice[0] == last_row:
@@ -366,8 +330,7 @@ class Bert4KGModel(nn.Module):
                 context_emb[[indice[0], indice[1]]] = self.mood_embeddings(torch.argmax(self.mood_attn_fc(self.mood_attn(context_emb[indice[0], 0:indice[1]]))))
                 last_row = indice[0]
                 last_col = indice[1]
-
-        context_emb = context_emb * torch.tensor(np.sqrt(self.embedding_size)).to(self.device) + self.position_embeddings(context_pos) + self.segment_embedding(context_mask)
+        context_emb = context_emb * torch.tensor(np.sqrt(self.embedding_size)).to(self.device) + self.position_embeddings(context_pos) + sum_embeddings[context_mask]
         context_emb = self.drop(self.layer_norm(context_emb))
         for i in range(self.n_layers):
             context_emb = self.encoder_layers[i](context_emb, context_vm)
@@ -388,11 +351,11 @@ class Bert4KGModel(nn.Module):
 
         if response_vector is None:
             predict_vector = torch.tensor([self.special_wordIdx['<user>']], dtype=torch.long).expand(self.batch_size, 1).to(self.device)
-            predict_emb = self.word_embeddings(predict_vector)
+            predict_emb = sum_embeddings[predict_vector]
             predict_emb[:, 0] = user_embeddings[userIdx]
             predict_pos = torch.tensor([0], dtype=torch.long).expand(self.batch_size, 1).to(self.device)
             predict_mask = torch.tensor([self.special_wordIdx['<user>']], dtype=torch.long).expand(self.batch_size, 1).to(self.device)
-            predict_emb = predict_emb * torch.tensor(np.sqrt(self.embedding_size)).to(self.device) + self.position_embeddings(predict_pos) + self.segment_embedding(predict_mask)
+            predict_emb = predict_emb * torch.tensor(np.sqrt(self.embedding_size)).to(self.device) + self.position_embeddings(predict_pos) + sum_embeddings[predict_mask]
             for idx in range(self.max_r_length):
                 predict_emb = self.drop(self.layer_norm(predict_emb))
                 for layer in self.decoder_layers:
@@ -400,22 +363,15 @@ class Bert4KGModel(nn.Module):
                     predict_emb = layer(predict_emb, torch.tril(predict_vm).to(self.device), context_emb, context_mask != self.special_wordIdx['<pad>'], con_graph_fc_emb, concept_mentioned != 0, db_graph_fc_emb, dbpedia_mentioned != 0)
                 decoder_latent = predict_emb[:, -1:, :]
                 graph_latent = self.graph_latent_fc(torch.cat([con_graph_attn_fc_emb.unsqueeze(1), db_graph_attn_fc_emb.unsqueeze(1), decoder_latent], -1))
-                gen_scores = F.linear(decoder_latent, torch.cat([concept_embeddings, self.word_embeddings.weight], dim=0)) + self.graph_latent_gen_fc(graph_latent)
+                gen_scores = F.linear(decoder_latent, sum_embeddings) + self.graph_latent_gen_fc(graph_latent)
                 _, last_token = gen_scores.max(dim=-1)
-                last_emb = []
-                for last_toke in last_token:
-                    if last_toke <self.n_concept:
-                        last_emb.append((concept_embeddings[last_toke]))
-                    else:
-                        last_emb.append(self.word_embeddings(last_toke-self.n_concept))
-                last_emb = torch.cat(last_emb,dim=0)
-                predict_emb = torch.cat([predict_emb, (last_emb * torch.tensor(np.sqrt(self.embedding_size))).unsqueeze(1).to(self.device) + self.position_embeddings(torch.tensor(predict_emb.shape[1] - 1, dtype=torch.long).expand(self.batch_size, 1).to(self.device)) + self.segment_embedding(torch.tensor(self.special_wordIdx['<concept>'], dtype=torch.long).expand(self.batch_size, 1).to(self.device))], dim=1)
+                predict_emb = torch.cat([predict_emb, sum_embeddings[last_token]], dim=1)
                 predict_vector = torch.cat([predict_vector, last_token], dim=1)
                 if ((predict_vector == self.special_wordIdx['<eos>']).sum(dim=1) > 0).sum().item() == self.batch_size:
                     break
             gen_loss = None
         else:
-            response_emb = self.word_embeddings(response_vector)
+            response_emb = sum_embeddings[response_vector]
             last_row = -1
             i = -1
             for indice in torch.nonzero(response_mask == self.special_wordIdx['<user>']):
@@ -426,42 +382,6 @@ class Bert4KGModel(nn.Module):
                     i = 0
                 response_emb[indice[0], indice[1]] = user_embeddings[user_mentioned[indice[0], i]]
             last_row = -1
-            i = -1
-            for indice in torch.nonzero(response_mask == self.special_wordIdx['<concept>']):
-                if indice[0] == last_row:
-                    i += 1
-                else:
-                    last_row = indice[0]
-                    i = 0
-                response_emb[indice[0], indice[1]] = concept_embeddings[concept_mentioned[indice[0], i]]
-            last_row = -1
-            i = -1
-            for indice in torch.nonzero(response_mask == self.special_wordIdx['<dbpedia>']):
-                if indice[0] == last_row:
-                    i += 1
-                else:
-                    last_row = indice[0]
-                    i = 0
-                response_emb[indice[0], indice[1]] = dbpedia_embeddings[dbpedia_mentioned[indice[0], i]]
-            last_row = -1
-            i = -1
-            for indice in torch.nonzero(response_mask == self.special_wordIdx['<related>']):
-                if indice[0] == last_row:
-                    i += 1
-                else:
-                    last_row = indice[0]
-                    i = 0
-                response_emb[indice[0], indice[1]] = dbpedia_embeddings[related_mentioned[indice[0], i]]
-            last_row = -1
-            i = -1
-            for indice in torch.nonzero(response_mask == self.special_wordIdx['<relation>']):
-                if indice[0] == last_row:
-                    i += 1
-                else:
-                    last_row = indice[0]
-                    i = 0
-                response_emb[indice[0], indice[1]] = self.relation_embeddings(relation_mentioned[indice[0], i])
-            last_row = -1
             last_col = -1
             for indice in torch.nonzero(response_mask == self.special_wordIdx['<mood>']):
                 if indice[0] == last_row:
@@ -471,15 +391,15 @@ class Bert4KGModel(nn.Module):
                     response_emb[[indice[0], indice[1]]] = self.mood_embeddings(torch.argmax(self.mood_attn_fc(self.mood_attn(response_emb[indice[0], 0:indice[1]]))))
                     last_row = indice[0]
                     last_col = indice[1]
-                    
-            response_emb = response_emb * torch.tensor(np.sqrt(self.embedding_size)).to(self.device) + self.position_embeddings(response_pos) + self.segment_embedding(response_mask)
+
+            response_emb = response_emb * torch.tensor(np.sqrt(self.embedding_size)).to(self.device) + self.position_embeddings(response_pos) + sum_embeddings[response_mask]
             response_emb = self.drop(self.layer_norm(response_emb))
             for layer in self.decoder_layers:
                 response_emb = layer(response_emb, torch.tril(response_vm).to(self.device), context_emb, context_mask != self.special_wordIdx['<pad>'], con_graph_fc_emb, concept_mentioned != 0, db_graph_fc_emb, dbpedia_mentioned != 0)
             decoder_latent = response_emb
             graph_latent = self.graph_latent_fc(torch.cat([con_graph_attn_fc_emb.unsqueeze(1).repeat(1, self.max_r_length, 1), db_graph_attn_fc_emb.unsqueeze(1).repeat(1, self.max_r_length, 1), decoder_latent], -1))
-            gen_scores = F.linear(decoder_latent, torch.cat([concept_embeddings, self.word_embeddings.weight], dim=0)) + self.graph_latent_gen_fc(graph_latent)
-            gen_loss = torch.mean(self.criterion_loss(gen_scores.view(-1, self.vocab_size + self.n_concept)[:-1], response_vector.view(-1)[1:]))
+            gen_scores = F.linear(decoder_latent, sum_embeddings) + self.graph_latent_gen_fc(graph_latent)
+            gen_loss = torch.mean(self.criterion_loss(gen_scores.view(-1, sum_embeddings.shape[0])[:-1], response_vector.view(-1)[1:]))
             predict_vector = None
         return info_loss, rec_scores, rec_loss, rec2_scores, rec2_loss, predict_vector, gen_loss
 

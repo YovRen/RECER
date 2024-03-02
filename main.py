@@ -19,7 +19,7 @@ class TrainLoop:
         self.learning_rate = 0.001
         self.gradient_clip = 0.1
         self.optimizer = 'adam'
-        self.device = 'cuda'
+        self.device = 'cpu'
         self.n_user = 1075
         self.n_concept = 24401
         self.n_mood = 5
@@ -52,12 +52,12 @@ class TrainLoop:
         self.word2wordEmb = np.load(self.crs_data_path + '/redial_word2wordEmb.npy')
         self.special_wordIdx = {'<pad>': 0, '<dbpedia>': 1, '<related>': 2, '<relation>': 3, '<concept>': 4, '<word>': 5, '<unk>': 6, '<user>': 7, '<mood>': 8, '<split>': 9, '<eos>': 10}
         self.vocab_size = len(self.word2wordIdx) + len(self.special_wordIdx)
-        # self.train_dataset = CRSDataset('toy_train', self)
-        # self.valid_dataset = CRSDataset('toy_valid', self)
-        # self.test_dataset = CRSDataset('toy_test', self)
-        self.train_dataset = CRSDataset('train', self)
-        self.valid_dataset = CRSDataset('valid', self)
-        self.test_dataset = CRSDataset('test', self)
+        self.train_dataset = CRSDataset('toy_test', self)
+        self.valid_dataset = CRSDataset('toy_test', self)
+        self.test_dataset = CRSDataset('toy_test', self)
+        # self.train_dataset = CRSDataset('train', self)
+        # self.valid_dataset = CRSDataset('valid', self)
+        # self.test_dataset = CRSDataset('test', self)
         self.dbpedia_edge_list = self.train_dataset.dbpedia_edge_list.to(self.device)
         self.concept_edge_sets = self.train_dataset.concept_edge_sets.to(self.device)
         self.train_dataloader = DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=False, drop_last=True)
@@ -77,9 +77,9 @@ class TrainLoop:
             losses = []
             bare_num = 0
             bare_value = 10000
-            for num, (userIdx, dbpediaId, context_vector, context_mask, context_pos, context_vm, concept_mentioned, dbpedia_mentioned, related_mentioned, relation_mentioned, user_mentioned, response_vector, response_mask, response_pos, response_vm, concept_vector, dbpedia_vector) in enumerate(tqdm(self.train_dataloader)):
+            for num, (userIdx, dbpediaId, context_vector, context_mask, context_pos, context_vm, concept_mentioned, dbpedia_mentioned, user_mentioned, response_vector, response_mask, response_pos, response_vm, concept_vector, dbpedia_vector) in enumerate(tqdm(self.train_dataloader)):
                 self.optimizer.zero_grad()
-                info_loss, rec_scores, rec_loss, rec2_scores, rec2_loss, predict_vector, gen_loss = self.model(userIdx.to(self.device), dbpediaId.to(self.device), context_vector.to(self.device), context_mask.to(self.device), context_pos.to(self.device), context_vm.to(self.device), concept_mentioned.to(self.device), dbpedia_mentioned.to(self.device), related_mentioned.to(self.device), relation_mentioned.to(self.device), user_mentioned.to(self.device), response_vector.to(self.device), response_mask.to(self.device), response_pos.to(self.device), response_vm.to(self.device), concept_vector.to(self.device), dbpedia_vector.to(self.device))
+                info_loss, rec_scores, rec_loss, rec2_scores, rec2_loss, predict_vector, gen_loss = self.model(userIdx.to(self.device), dbpediaId.to(self.device), context_vector.to(self.device), context_mask.to(self.device), context_pos.to(self.device), context_vm.to(self.device), concept_mentioned.to(self.device), dbpedia_mentioned.to(self.device), user_mentioned.to(self.device), response_vector.to(self.device), response_mask.to(self.device), response_pos.to(self.device), response_vm.to(self.device), concept_vector.to(self.device), dbpedia_vector.to(self.device))
                 if i < rec_epoch:
                     joint_loss = rec_loss + info_loss
                 else:
@@ -133,14 +133,18 @@ class TrainLoop:
             for sen in batch_sen.numpy().tolist():
                 sentence = []
                 for word in sen:
-                    if word < self.n_concept:
-                        sentence.append(self.conceptIdx2concept[word])
-                    elif word == self.n_concept + self.special_wordIdx['<unk>']:
+                    if word == self.special_wordIdx['<unk>']:
                         sentence.append('_UNK_')
-                    elif word == self.n_concept + self.special_wordIdx['<dbpedia>']:
+                    elif word == self.special_wordIdx['<dbpedia>']:
                         sentence.append('_DBPEDIA_')
-                    elif word >= self.n_concept + len(self.special_wordIdx):
-                        sentence.append(self.wordIdx2word[word-self.n_concept])
+                    elif word >= len(self.special_wordIdx):
+                        sentence.append(self.wordIdx2word[word])
+                    elif word >= self.vocab_size:
+                        sentence.append(self.conceptIdx2concept[word-self.vocab_size])
+                    elif word >= self.vocab_size + self.n_concept:
+                        sentence.append('<D'+str(word-self.vocab_size-self.n_concept)+'>')
+                    elif word >= self.vocab_size + self.n_concept + self.n_dbpedia:
+                        sentence.append('<R>'+str(word-self.vocab_size-self.n_concept-self.n_dbpedia)+'>')
                 sentences.append(sentence)
             return sentences
 
@@ -148,10 +152,10 @@ class TrainLoop:
         tokens_response = []
         tokens_predict = []
         tokens_context = []
-        for userIdx, dbpediaId, context_vector, context_mask, context_pos, context_vm, concept_mentioned, dbpedia_mentioned, related_mentioned, relation_mentioned, user_mentioned, response_vector, response_mask, response_pos, response_vm, concept_vector, dbpedia_vector in tqdm(val_dataloader):
+        for userIdx, dbpediaId, context_vector, context_mask, context_pos, context_vm, concept_mentioned, dbpedia_mentioned, user_mentioned, response_vector, response_mask, response_pos, response_vm, concept_vector, dbpedia_vector in tqdm(val_dataloader):
             with torch.no_grad():
-                _, rec_scores, rec_loss, rec2_scores, rec2_loss, _, gen_loss = self.model(userIdx.to(self.device), dbpediaId.to(self.device), context_vector.to(self.device), context_mask.to(self.device), context_pos.to(self.device), context_vm.to(self.device), concept_mentioned.to(self.device), dbpedia_mentioned.to(self.device), related_mentioned.to(self.device), relation_mentioned.to(self.device), user_mentioned.to(self.device), response_vector.to(self.device), response_mask.to(self.device), response_pos.to(self.device), response_vm.to(self.device), concept_vector.to(self.device), dbpedia_vector.to(self.device))
-                _, _, _, _, _, predict_vector, _ = self.model(userIdx.to(self.device), dbpediaId.to(self.device), context_vector.to(self.device), context_mask.to(self.device), context_pos.to(self.device), context_vm.to(self.device), concept_mentioned.to(self.device), dbpedia_mentioned.to(self.device), related_mentioned.to(self.device), relation_mentioned.to(self.device), user_mentioned.to(self.device), None, None, None, None, concept_vector.to(self.device), dbpedia_vector.to(self.device))
+                _, rec_scores, rec_loss, rec2_scores, rec2_loss, _, gen_loss = self.model(userIdx.to(self.device), dbpediaId.to(self.device), context_vector.to(self.device), context_mask.to(self.device), context_pos.to(self.device), context_vm.to(self.device), concept_mentioned.to(self.device), dbpedia_mentioned.to(self.device), user_mentioned.to(self.device), response_vector.to(self.device), response_mask.to(self.device), response_pos.to(self.device), response_vm.to(self.device), concept_vector.to(self.device), dbpedia_vector.to(self.device))
+                _, _, _, _, _, predict_vector, _ = self.model(userIdx.to(self.device), dbpediaId.to(self.device), context_vector.to(self.device), context_mask.to(self.device), context_pos.to(self.device), context_vm.to(self.device), concept_mentioned.to(self.device), dbpedia_mentioned.to(self.device), user_mentioned.to(self.device), None, None, None, None, concept_vector.to(self.device), dbpedia_vector.to(self.device))
             self.metrics_rec["rec_loss"] += rec_loss.item()
             self.metrics_rec["rec2_loss"] += rec2_loss.item()
             self.metrics_gen['gen_loss'] += gen_loss.item()
@@ -226,6 +230,6 @@ class TrainLoop:
 
 if __name__ == '__main__':
     loop = TrainLoop()
-    # loop.model.load_model('rec')
+    # loop.model.load_model('gen')
     loop.train(rec_epoch=1, gen_epoch=1)
     met = loop.val(is_test=True)
