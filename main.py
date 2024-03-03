@@ -19,7 +19,7 @@ class TrainLoop:
         self.learning_rate = 0.001
         self.gradient_clip = 0.1
         self.optimizer = 'adam'
-        self.device = 'cpu'
+        self.device = 'cuda'
         self.n_user = 1075
         self.n_concept = 24401
         self.n_mood = 5
@@ -27,7 +27,7 @@ class TrainLoop:
         self.n_relations = 64  # 46+18
         self.n_bases = 8
         self.hidden_dim = 128
-        self.max_c_length = 256
+        self.max_c_length = 512
         self.max_r_length = 30
         self.embedding_size = 300
         self.n_heads = 2
@@ -95,7 +95,7 @@ class TrainLoop:
                 if self.gradient_clip > 0:
                     torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.gradient_clip)
                 losses.append([rec_loss.item(), info_loss.item(), gen_loss.item(), rec2_loss.item(), joint_loss.item()])
-                if (num + 1) % (1024 / self.batch_size) == 0:
+                if (num + 1) % (512 / self.batch_size) == 0:
                     print('epoch%d num%d' % (i, num + 1))
                     print('rec_loss is %f' % (sum([l[0] for l in losses]) / len(losses)))
                     print('info_loss is %f' % (sum([l[1] for l in losses]) / len(losses)))
@@ -130,21 +130,35 @@ class TrainLoop:
 
         def vector2sentence(batch_sen):
             sentences = []
+            db = 0
             for sen in batch_sen.numpy().tolist():
                 sentence = []
                 for word in sen:
-                    if word == self.special_wordIdx['<unk>']:
-                        sentence.append('_UNK_')
-                    elif word == self.special_wordIdx['<dbpedia>']:
-                        sentence.append('_DBPEDIA_')
-                    elif word >= len(self.special_wordIdx):
+                    if word < len(self.special_wordIdx):
+                        db = 0
+                        if word ==self.special_wordIdx['<pad>']:
+                            continue
+                        if word ==self.special_wordIdx['<split>']:
+                            sentence.append('\n')
+                            continue
+                        sentence.append('_'+[key for key, value in self.special_wordIdx.items() if value == word][0].upper()+'_')
+                    elif word < self.vocab_size:
+                        db = 0
                         sentence.append(self.wordIdx2word[word])
-                    elif word >= self.vocab_size:
+                    elif word < self.vocab_size + self.n_concept:
+                        db = 0
                         sentence.append(self.conceptIdx2concept[word-self.vocab_size])
-                    elif word >= self.vocab_size + self.n_concept:
-                        sentence.append('<D'+str(word-self.vocab_size-self.n_concept)+'>')
-                    elif word >= self.vocab_size + self.n_concept + self.n_dbpedia:
-                        sentence.append('<R>'+str(word-self.vocab_size-self.n_concept-self.n_dbpedia)+'>')
+                    elif word < self.vocab_size + self.n_concept + self.n_dbpedia:
+                        db += 1
+                        if db == 1:
+                            sentence.append('<D:'+str(word-self.vocab_size-self.n_concept)+'>')
+                    elif word < self.vocab_size + self.n_concept + self.n_dbpedia + self.n_relations:
+                        db += 1
+                        continue
+                    else:
+                        db = 0
+                        sentence.append('<U:'+str(word-self.vocab_size-self.n_concept-self.n_relations)+'>')
+                        
                 sentences.append(sentence)
             return sentences
 
@@ -172,7 +186,6 @@ class TrainLoop:
                 self.metrics_rec["recall2@10"] += int(target_idx in pred2_idx[b][:10].tolist())
                 self.metrics_rec["recall2@50"] += int(target_idx in pred2_idx[b][:50].tolist())
                 self.metrics_rec["count"] += 1
-            print(vector2sentence(predict_vector.cpu()))
             tokens_response.extend(vector2sentence(response_vector.cpu()))
             tokens_predict.extend(vector2sentence(predict_vector.cpu()))
             tokens_context.extend(vector2sentence(context_vector.cpu()))
@@ -231,5 +244,5 @@ class TrainLoop:
 if __name__ == '__main__':
     loop = TrainLoop()
     # loop.model.load_model('gen')
-    loop.train(rec_epoch=1, gen_epoch=1)
+    # loop.train(rec_epoch=1, gen_epoch=1)
     met = loop.val(is_test=True)

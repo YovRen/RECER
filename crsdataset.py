@@ -27,6 +27,7 @@ class CRSDataset(Dataset):
         self.n_dbpedia = args.n_dbpedia
         self.n_concept = args.n_concept
         self.vocab_size = args.vocab_size
+        self.n_relations = args.n_relations
         self.datapre = []
         # self.prepare_word2vec()
         # self.prepare_dbpedia_subkg()
@@ -107,10 +108,11 @@ class CRSDataset(Dataset):
                         input_ids.append(self.vocab_size + self.n_concept + self.n_dbpedia + relate[1])
                         attention_mask.append(self.special_wordIdx['<relation>'])
                 # 合并每条消息
+                userIdx = int(self.userId2userIdx[str(message['senderWorkerId'])])
                 if num == 0:
-                    message_dict = {'userIdx': int(self.userId2userIdx[str(message['senderWorkerId'])]), 'input_ids': input_ids, 'attention_mask': attention_mask, 'concept_mentioned': concept_mentioned, 'dbpedia_mentioned': dbpedia_mentioned, 'abs_idx_tree': abs_idx_tree, 'pos_idx_tree': pos_idx_tree, 'abs_idx_src': abs_idx_src, 'pos_idx': pos_idx, 'abs_idx': abs_idx}
+                    message_dict = {'userIdx': userIdx, 'input_ids': input_ids, 'attention_mask': attention_mask, 'concept_mentioned': concept_mentioned, 'dbpedia_mentioned': dbpedia_mentioned, 'abs_idx_tree': abs_idx_tree, 'pos_idx_tree': pos_idx_tree, 'abs_idx_src': abs_idx_src, 'pos_idx': pos_idx, 'abs_idx': abs_idx}
                     message_list.append(message_dict)
-                elif int(self.userId2userIdx[str(message['senderWorkerId'])]) == message_list[-1]['userIdx']:
+                elif userIdx == message_list[-1]['userIdx']:
                     message_list[-1]['concept_mentioned'] += concept_mentioned
                     message_list[-1]['dbpedia_mentioned'] += dbpedia_mentioned
                     message_list[-1]['input_ids'] += input_ids
@@ -121,17 +123,17 @@ class CRSDataset(Dataset):
                     message_list[-1]['pos_idx'] += (pos_idx + 1)
                     message_list[-1]['abs_idx'] += (abs_idx + 1)
                 else:
-                    message_list[-1]['input_ids'] = [self.special_wordIdx['<user>']] + message_list[-1]['input_ids'] + [self.special_wordIdx['<mood>']]
+                    message_list[-1]['input_ids'] = [userIdx+self.vocab_size+self.n_concept+self.n_dbpedia+self.n_relations] + message_list[-1]['input_ids'] + [self.special_wordIdx['<mood>']]
                     message_list[-1]['attention_mask'] = [self.special_wordIdx['<user>']] + message_list[-1]['attention_mask'] + [self.special_wordIdx['<mood>']]
                     message_list[-1]['pos_idx_tree'] = [(0, [])] + [(src_id + 1, [relate + 1 for relate in relates]) for src_id, relates in message_list[-1]['pos_idx_tree']] + [(message_list[-1]['pos_idx'] + 2, [])]
                     message_list[-1]['abs_idx_tree'] = [(0, [])] + [(src_id + 1, [relate + 1 for relate in relates]) for src_id, relates in message_list[-1]['abs_idx_tree']] + [(message_list[-1]['abs_idx'] + 2, [])]
                     message_list[-1]['abs_idx_src'] = [0] + [src_id + 1 for src_id in message_list[-1]['abs_idx_src']] + [message_list[-1]['abs_idx'] + 2]
                     message_list[-1]['pos_idx'] += 2
                     message_list[-1]['abs_idx'] += 2
-                    message_dict = {'userIdx': int(self.userId2userIdx[str(message['senderWorkerId'])]), 'input_ids': input_ids, 'attention_mask': attention_mask, 'concept_mentioned': concept_mentioned, 'dbpedia_mentioned': dbpedia_mentioned, 'abs_idx_tree': abs_idx_tree, 'pos_idx_tree': pos_idx_tree, 'abs_idx_src': abs_idx_src, 'pos_idx': pos_idx, 'abs_idx': abs_idx}
+                    message_dict = {'userIdx': userIdx, 'input_ids': input_ids, 'attention_mask': attention_mask, 'concept_mentioned': concept_mentioned, 'dbpedia_mentioned': dbpedia_mentioned, 'abs_idx_tree': abs_idx_tree, 'pos_idx_tree': pos_idx_tree, 'abs_idx_src': abs_idx_src, 'pos_idx': pos_idx, 'abs_idx': abs_idx}
                     message_list.append(message_dict)
                 if num == len(messages) - 1:
-                    message_list[-1]['input_ids'] = [self.special_wordIdx['<user>']] + message_list[-1]['input_ids'] + [self.special_wordIdx['<mood>']]
+                    message_list[-1]['input_ids'] = [userIdx+self.vocab_size+self.n_concept+self.n_dbpedia+self.n_relations] + message_list[-1]['input_ids'] + [self.special_wordIdx['<mood>']]
                     message_list[-1]['attention_mask'] = [self.special_wordIdx['<user>']] + message_list[-1]['attention_mask'] + [self.special_wordIdx['<mood>']]
                     message_list[-1]['pos_idx_tree'] = [(0, [])] + [(src_id + 1, [relate + 1 for relate in relates]) for src_id, relates in message_list[-1]['pos_idx_tree']] + [(message_list[-1]['pos_idx'] + 2, [])]
                     message_list[-1]['abs_idx_tree'] = [(0, [])] + [(src_id + 1, [relate + 1 for relate in relates]) for src_id, relates in message_list[-1]['abs_idx_tree']] + [(message_list[-1]['abs_idx'] + 2, [])]
