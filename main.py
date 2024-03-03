@@ -239,4 +239,4 @@ if __name__ == '__main__':
     loop = TrainLoop()
     # loop.model.load_model('gen')
     # loop.train(rec_epoch=1, gen_epoch=1)
-    met = loop.val(is_test=True)
+    met = loop.val(is_test=False)
