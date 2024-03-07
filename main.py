@@ -15,11 +15,11 @@ warnings.filterwarnings("ignore")
 class TrainLoop:
     def __init__(self):
         self.crs_data_path = "data_crs"
-        self.batch_size = 64
+        self.batch_size = 128
         self.learning_rate = 0.001
         self.gradient_clip = 0.1
         self.optimizer = 'adam'
-        self.device = 'cpu'
+        self.device = 'cuda'
         self.n_user = 1075
         self.n_concept = 24401
         self.n_mood = 5
@@ -64,7 +64,7 @@ class TrainLoop:
         self.test_dataloader = DataLoader(self.test_dataset, batch_size=self.batch_size, shuffle=False, drop_last=True)
         self.valid_dataloader = DataLoader(self.valid_dataset, batch_size=self.batch_size, shuffle=False, drop_last=True)
         self.metrics_rec = {"rec_loss": 0, "recall@1": 0, "recall@10": 0, "recall@50": 0, "count": 0}
-        self.metrics_gen = {"gen_loss": 0, "ppl": 0, "bleu1": 0, "bleu2": 0, "bleu3": 0, "bleu4": 0, "dist1": 0, "dist2": 0, "dist3": 0, "dist4": 0, "count": 0}
+        self.metrics_gen = {"gen_loss": 0, "ppl": 0, "bleu1": 0, "bleu2": 0, "bleu3": 0, "bleu4": 0, "dist1": 0, "dist2": 0, "dist3": 0, "dist4": 0}
         self.model = Bert4KGModel(self).to(self.device)
         self.optimizer = {k.lower(): v for k, v in torch.optim.__dict__.items() if not k.startswith('__') and k[0].isupper()}[self.optimizer]([p for p in self.model.parameters() if p.requires_grad], lr=self.learning_rate, amsgrad=True, betas=(0.9, 0.999))
 
@@ -77,18 +77,18 @@ class TrainLoop:
             losses = []
             bare_num = 0
             bare_value = 10000
-            for num, (userIdx, dbpediaId, context_vector, context_mask, context_pos, context_vm, concept_mentioned, dbpedia_mentioned, user_mentioned, response_vector, response_mask, concept_vector, dbpedia_vector) in enumerate(tqdm(self.train_dataloader)):
+            for num, (userIdx, dbpediaId, context_vector, context_mask, context_pos, context_vm, response_vector, response_mask, concept_vector, dbpedia_vector, user_vector) in enumerate(tqdm(self.train_dataloader)):
                 self.optimizer.zero_grad()
-                info_loss, rec_scores, rec_loss, rec2_scores, rec2_loss, predict_vector, gen_loss = self.model(userIdx.to(self.device), dbpediaId.to(self.device), context_vector.to(self.device), context_mask.to(self.device), context_pos.to(self.device), context_vm.to(self.device), concept_mentioned.to(self.device), dbpedia_mentioned.to(self.device), user_mentioned.to(self.device), response_vector.to(self.device), response_mask.to(self.device), concept_vector.to(self.device), dbpedia_vector.to(self.device))
+                info_loss, rec_scores, rec_loss, rec2_scores, rec2_loss, predict_vector, gen_loss = self.model(userIdx.to(self.device), dbpediaId.to(self.device), context_vector.to(self.device), context_mask.to(self.device), context_pos.to(self.device), context_vm.to(self.device), response_vector.to(self.device), response_mask.to(self.device), concept_vector.to(self.device), dbpedia_vector.to(self.device), user_vector.to(self.device))
                 if i < rec_epoch:
-                    joint_loss = rec_loss + info_loss
+                    joint_loss = rec_loss + 0.025*info_loss
                 else:
                     joint_loss = gen_loss + rec2_loss
                 if joint_loss > bare_value:
                     bare_num += 1
                 else:
                     bare_num = 0
-                if bare_num > 3:
+                if bare_num > 2:
                     continue
                 joint_loss.backward()
                 self.optimizer.step()
@@ -96,7 +96,7 @@ class TrainLoop:
                     torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.gradient_clip)
                 losses.append([rec_loss.item(), info_loss.item(), gen_loss.item(), rec2_loss.item(), joint_loss.item()])
                 if (num + 1) % (512 / self.batch_size) == 0:
-                    print('epoch%d num%d' % (i, num + 1))
+                    print('\nepoch%d num%d' % (i, num + 1))
                     print('rec_loss is %f' % (sum([l[0] for l in losses]) / len(losses)))
                     print('info_loss is %f' % (sum([l[1] for l in losses]) / len(losses)))
                     print('gen_loss is %f' % (sum([l[2] for l in losses]) / len(losses)))
@@ -126,7 +126,7 @@ class TrainLoop:
     def val(self, is_test=False):
         self.model.eval()
         self.metrics_rec = {"rec_loss": 0, "recall@1": 0, "recall@10": 0, "recall@50": 0, "rec2_loss": 0, "recall2@1": 0, "recall2@10": 0, "recall2@50": 0, "count": 0}
-        self.metrics_gen = {"gen_loss": 0, "ppl": 0, "bleu1": 0, "bleu2": 0, "bleu3": 0, "bleu4": 0, "dist1": 0, "dist2": 0, "dist3": 0, "dist4": 0, "count": 0}
+        self.metrics_gen = {"gen_loss": 0, "ppl": 0, "bleu1": 0, "bleu2": 0, "bleu3": 0, "bleu4": 0, "dist1": 0, "dist2": 0, "dist3": 0, "dist4": 0}
 
         def vector2sentence(batch_sen):
             sentences = []
@@ -158,10 +158,10 @@ class TrainLoop:
         tokens_response = []
         tokens_predict = []
         tokens_context = []
-        for userIdx, dbpediaId, context_vector, context_mask, context_pos, context_vm, concept_mentioned, dbpedia_mentioned, user_mentioned, response_vector, response_mask, concept_vector, dbpedia_vector in tqdm(val_dataloader):
+        for userIdx, dbpediaId, context_vector, context_mask, context_pos, context_vm, response_vector, response_mask, concept_vector, dbpedia_vector, user_vector in tqdm(val_dataloader):
             with torch.no_grad():
-                _, rec_scores, rec_loss, rec2_scores, rec2_loss, _, gen_loss = self.model(userIdx.to(self.device), dbpediaId.to(self.device), context_vector.to(self.device), context_mask.to(self.device), context_pos.to(self.device), context_vm.to(self.device), concept_mentioned.to(self.device), dbpedia_mentioned.to(self.device), user_mentioned.to(self.device), response_vector.to(self.device), response_mask.to(self.device), concept_vector.to(self.device), dbpedia_vector.to(self.device))
-                _, _, _, _, _, predict_vector, _ = self.model(userIdx.to(self.device), dbpediaId.to(self.device), context_vector.to(self.device), context_mask.to(self.device), context_pos.to(self.device), context_vm.to(self.device), concept_mentioned.to(self.device), dbpedia_mentioned.to(self.device), user_mentioned.to(self.device), None, None, concept_vector.to(self.device), dbpedia_vector.to(self.device))
+                _, rec_scores, rec_loss, rec2_scores, rec2_loss, _, gen_loss = self.model(userIdx.to(self.device), dbpediaId.to(self.device), context_vector.to(self.device), context_mask.to(self.device), context_pos.to(self.device), context_vm.to(self.device), response_vector.to(self.device), response_mask.to(self.device), concept_vector.to(self.device), dbpedia_vector.to(self.device), user_vector.to(self.device))
+                _, _, _, _, _, predict_vector, _ = self.model(userIdx.to(self.device), dbpediaId.to(self.device), context_vector.to(self.device), context_mask.to(self.device), context_pos.to(self.device), context_vm.to(self.device), None, None, concept_vector.to(self.device), dbpedia_vector.to(self.device), user_vector.to(self.device))
             self.metrics_rec["rec_loss"] += rec_loss.item()
             self.metrics_rec["rec2_loss"] += rec2_loss.item()
             self.metrics_gen['gen_loss'] += gen_loss.item()
@@ -178,8 +178,6 @@ class TrainLoop:
                 self.metrics_rec["recall2@10"] += int(target_idx in pred2_idx[b][:10].tolist())
                 self.metrics_rec["recall2@50"] += int(target_idx in pred2_idx[b][:50].tolist())
                 self.metrics_rec["count"] += 1
-            print(len(tokens_predict))
-            print(predict_vector.shape,predict_vector)
             tokens_response.extend(vector2sentence(response_vector.cpu()))
             tokens_predict.extend(vector2sentence(predict_vector.cpu()))
             tokens_context.extend(vector2sentence(context_vector.cpu()))
@@ -188,7 +186,6 @@ class TrainLoop:
             self.metrics_gen['bleu2'] += sentence_bleu([tar], out, weights=(0, 1, 0, 0))
             self.metrics_gen['bleu3'] += sentence_bleu([tar], out, weights=(0, 0, 1, 0))
             self.metrics_gen['bleu4'] += sentence_bleu([tar], out, weights=(0, 0, 0, 1))
-            self.metrics_gen['count'] += 1
         unigram_count = 0
         bigram_count = 0
         trigram_count = 0
@@ -227,8 +224,8 @@ class TrainLoop:
                 file.writelines("context:" + context + '\n')
                 file.writelines("response:" + response + '\n')
                 file.writelines("predict:" + predict + '\n')
-        self.metrics_rec = {key: self.metrics_rec[key] / self.metrics_gen['count'] if 'loss' in key else self.metrics_rec[key] / self.metrics_rec['count'] for key in self.metrics_rec}
-        self.metrics_gen = {key: self.metrics_gen[key] if 'dist' in key else self.metrics_gen[key] / self.metrics_gen['count'] for key in self.metrics_gen}
+        self.metrics_rec = {key: self.metrics_rec[key] / len(val_dataloader) if 'loss' in key else self.metrics_rec[key] / self.metrics_rec['count'] for key in self.metrics_rec}
+        self.metrics_gen = {key: self.metrics_gen[key] if 'dist' in key else self.metrics_gen[key] / len(val_dataloader) for key in self.metrics_gen}
         self.metrics_gen['ppl'] = math.exp(self.metrics_gen['gen_loss'])
         print(self.metrics_rec)
         print(self.metrics_gen)
@@ -237,6 +234,6 @@ class TrainLoop:
 
 if __name__ == '__main__':
     loop = TrainLoop()
-    # loop.model.load_model('gen')
-    # loop.train(rec_epoch=1, gen_epoch=1)
+    # loop.model.load_model('rec')
+    loop.train(rec_epoch=1, gen_epoch=1)
     met = loop.val(is_test=False)

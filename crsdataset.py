@@ -26,6 +26,7 @@ class CRSDataset(Dataset):
         self.special_wordIdx = args.special_wordIdx
         self.n_dbpedia = args.n_dbpedia
         self.n_concept = args.n_concept
+        self.n_user = args.n_user
         self.vocab_size = args.vocab_size
         self.n_relations = args.n_relations
         self.datapre = []
@@ -58,7 +59,6 @@ class CRSDataset(Dataset):
             for num, message in enumerate(messages):
                 input_ids = []
                 attention_mask = []
-                concept_mentioned = []
                 dbpedia_mentioned = []
                 # create tree
                 sent_tree = []
@@ -94,7 +94,6 @@ class CRSDataset(Dataset):
                     if token in self.concept2conceptIdx.keys():
                         input_ids.append(self.vocab_size + self.concept2conceptIdx[token])
                         attention_mask.append(self.special_wordIdx['<concept>'])
-                        concept_mentioned.append(self.concept2conceptIdx[token])
                     elif token.isdigit() and (token in movieMentions.keys() and self.movieId2movie[token] in self.movie2dbpediaId.keys() or token in self.text2movie[message['text']]):
                         input_ids.append(self.vocab_size + self.n_concept + self.movie2dbpediaId[self.movieId2movie[token]])
                         attention_mask.append(self.special_wordIdx['<dbpedia>'])
@@ -110,10 +109,9 @@ class CRSDataset(Dataset):
                 # 合并每条消息
                 userIdx = int(self.userId2userIdx[str(message['senderWorkerId'])])
                 if num == 0:
-                    message_dict = {'userIdx': userIdx, 'input_ids': input_ids, 'attention_mask': attention_mask, 'concept_mentioned': concept_mentioned, 'dbpedia_mentioned': dbpedia_mentioned, 'abs_idx_tree': abs_idx_tree, 'pos_idx_tree': pos_idx_tree, 'abs_idx_src': abs_idx_src, 'pos_idx': pos_idx, 'abs_idx': abs_idx}
+                    message_dict = {'userIdx': userIdx, 'input_ids': input_ids, 'attention_mask': attention_mask, 'dbpedia_mentioned': dbpedia_mentioned, 'abs_idx_tree': abs_idx_tree, 'pos_idx_tree': pos_idx_tree, 'abs_idx_src': abs_idx_src, 'pos_idx': pos_idx, 'abs_idx': abs_idx}
                     message_list.append(message_dict)
                 elif userIdx == message_list[-1]['userIdx']:
-                    message_list[-1]['concept_mentioned'] += concept_mentioned
                     message_list[-1]['dbpedia_mentioned'] += dbpedia_mentioned
                     message_list[-1]['input_ids'] += input_ids
                     message_list[-1]['attention_mask'] += attention_mask
@@ -130,7 +128,7 @@ class CRSDataset(Dataset):
                     message_list[-1]['abs_idx_src'] = [0] + [src_id + 1 for src_id in message_list[-1]['abs_idx_src']] + [message_list[-1]['abs_idx'] + 2]
                     message_list[-1]['pos_idx'] += 2
                     message_list[-1]['abs_idx'] += 2
-                    message_dict = {'userIdx': userIdx, 'input_ids': input_ids, 'attention_mask': attention_mask, 'concept_mentioned': concept_mentioned, 'dbpedia_mentioned': dbpedia_mentioned, 'abs_idx_tree': abs_idx_tree, 'pos_idx_tree': pos_idx_tree, 'abs_idx_src': abs_idx_src, 'pos_idx': pos_idx, 'abs_idx': abs_idx}
+                    message_dict = {'userIdx': userIdx, 'input_ids': input_ids, 'attention_mask': attention_mask, 'dbpedia_mentioned': dbpedia_mentioned, 'abs_idx_tree': abs_idx_tree, 'pos_idx_tree': pos_idx_tree, 'abs_idx_src': abs_idx_src, 'pos_idx': pos_idx, 'abs_idx': abs_idx}
                     message_list.append(message_dict)
                 if num == len(messages) - 1:
                     message_list[-1]['input_ids'] = [userIdx + self.vocab_size + self.n_concept + self.n_dbpedia + self.n_relations] + message_list[-1]['input_ids'] + [self.special_wordIdx['<mood>']]
@@ -142,9 +140,6 @@ class CRSDataset(Dataset):
                     message_list[-1]['abs_idx'] += 2
 
             # 将message_list中所有的消息整合起来
-            history_concept_mentioned = []
-            history_dbpedia_mentioned = []
-            history_user_mentioned = []
             history_input_ids = []
             history_attention_mask = []
             history_pos_idx_tree = []
@@ -155,46 +150,16 @@ class CRSDataset(Dataset):
             for message_dict in message_list:
                 userIdx = message_dict['userIdx']
                 if userIdx == int(self.userId2userIdx[str(respondentWorkerId)]) and len(history_input_ids) > 0:
-                    context_vector = np.array((history_input_ids + [self.special_wordIdx['<eos>']] + [self.special_wordIdx['<pad>']] * (self.max_c_length - len(history_input_ids) - 1))[:self.max_c_length])
-                    context_mask = np.array((history_attention_mask + [self.special_wordIdx['<eos>']] + [self.special_wordIdx['<pad>']] * (self.max_c_length - len(history_attention_mask) - 1))[:self.max_c_length])
-                    concept_mentioned = np.array((history_concept_mentioned + [0] * (self.max_c_length - len(history_concept_mentioned)))[:self.max_c_length])
-                    dbpedia_mentioned = np.array((history_dbpedia_mentioned + [0] * (50 - len(history_dbpedia_mentioned)))[:50])
-                    user_mentioned = np.array((history_user_mentioned + [0] * (50 - len(history_user_mentioned)))[:50])
                     response_attention_mask = np.array(message_dict['attention_mask'])[np.isin(message_dict['attention_mask'], [1, 4, 5])]
                     response_input_ids = np.array(message_dict['input_ids'])[np.isin(message_dict['attention_mask'], [1, 4, 5])]
                     response_input_ids[response_input_ids >= self.vocab_size + self.n_concept] = self.special_wordIdx['<dbpedia>']
-                    response_vector = np.array((response_input_ids.tolist() + [self.special_wordIdx['<eos>']] + [self.special_wordIdx['<pad>']] * (self.max_r_length - len(response_input_ids) - 1))[:self.max_r_length])
-                    response_mask = np.array((response_attention_mask.tolist() + [self.special_wordIdx['<eos>']] + [self.special_wordIdx['<pad>']] * (self.max_r_length - len(response_attention_mask) - 1))[:self.max_r_length])
-                    # Calculate visible matrix
-                    context_pos = []
-                    for src_id, relates in history_pos_idx_tree:
-                        context_pos.append(src_id)
-                        for relate in relates:
-                            context_pos.append(relate)
-                    context_pos = np.array((context_pos + [self.max_c_length - 1] * (self.max_c_length - len(context_pos)))[:self.max_c_length])
-
-                    # 构建可视矩阵
-                    context_vm = np.zeros((history_abs_idx + 1, history_abs_idx + 1))
-                    history_dbpedia_count = []
-                    for src_id, relates in history_abs_idx_tree:
-                        context_vm[src_id, history_abs_idx_src + relates] = 1
-                        for i in range(0, len(relates), 2):
-                            for j, (epoch_src_id, epoch_relates) in enumerate(history_dbpedia_count):
-                                context_vm[relates[i], [epoch_src_id] + epoch_relates] = 0.9 ** (len(history_dbpedia_count) - j)
-                                context_vm[relates[i + 1], [epoch_src_id] + epoch_relates] = 0.9 ** (len(history_dbpedia_count) - j)
-                            context_vm[relates[i], [src_id] + relates[i:i + 2]] = 1
-                            context_vm[relates[i + 1], [src_id] + relates[i:i + 2]] = 1
-                        if len(relates) > 0:
-                            history_dbpedia_count.append((src_id, relates))
-                    if history_abs_idx < self.max_c_length:
-                        context_vm = np.pad(context_vm, ((0, self.max_c_length - history_abs_idx - 1), (0, self.max_c_length - history_abs_idx - 1)), 'constant')
-                    else:
-                        context_vm = context_vm[:self.max_c_length, :self.max_c_length]
-
+                    assert history_abs_idx == history_abs_idx_src[-1]
                     if len(message_dict['dbpedia_mentioned']) == 0:
-                        self.datapre.append([userIdx, 0, context_vector, context_mask, context_pos, context_vm, concept_mentioned, dbpedia_mentioned, user_mentioned, response_vector, response_mask])
+                        assert history_abs_idx == history_abs_idx_src[-1]
+                        self.datapre.append([userIdx, 0, history_input_ids.copy(), history_attention_mask.copy(), response_input_ids.tolist(), response_attention_mask.tolist(), history_pos_idx_tree.copy(), history_pos_idx, history_abs_idx_tree.copy(), history_abs_idx, history_abs_idx_src.copy()])
                     for dbpediaId in message_dict['dbpedia_mentioned']:
-                        self.datapre.append([userIdx, dbpediaId, context_vector, context_mask, context_pos, context_vm, concept_mentioned, dbpedia_mentioned, user_mentioned, response_vector, response_mask])
+                        assert history_abs_idx == history_abs_idx_src[-1]
+                        self.datapre.append([userIdx, dbpediaId, history_input_ids.copy(), history_attention_mask.copy(), response_input_ids.tolist(), response_attention_mask.tolist(), history_pos_idx_tree.copy(), history_pos_idx, history_abs_idx_tree.copy(), history_abs_idx, history_abs_idx_src.copy()])
                 if len(history_attention_mask) != 0:
                     history_input_ids.extend([self.special_wordIdx['<split>']])
                     history_attention_mask.extend([self.special_wordIdx['<split>']])
@@ -203,9 +168,6 @@ class CRSDataset(Dataset):
                     history_abs_idx_src.extend([history_abs_idx + 1])
                     history_abs_idx += 1
                     history_pos_idx += 1
-                history_concept_mentioned.extend(message_dict['concept_mentioned'])
-                history_dbpedia_mentioned.extend(message_dict['dbpedia_mentioned'])
-                history_user_mentioned.extend([message_dict['userIdx']])
                 history_input_ids.extend(message_dict['input_ids'])
                 history_attention_mask.extend(message_dict['attention_mask'])
                 history_pos_idx_tree.extend([(src_id + history_pos_idx + 1, [relate + history_pos_idx + 1 for relate in relates]) for src_id, relates in message_dict['pos_idx_tree']])
@@ -213,6 +175,7 @@ class CRSDataset(Dataset):
                 history_abs_idx_src.extend([src_id + history_abs_idx + 1 for src_id in message_dict['abs_idx_src']])
                 history_abs_idx += (message_dict['abs_idx'] + 1)
                 history_pos_idx += (message_dict['pos_idx'] + 1)
+        self.datapre = self.datapre[:len(self.datapre) // 5]
 
     def dbpedia_edge_list(self):
         edge_list = []
@@ -315,16 +278,44 @@ class CRSDataset(Dataset):
         json.dump(subkg, open(self.crs_data_path + '/dbpedia_subkg.jsonl', 'w', encoding='utf-8'), ensure_ascii=False)
 
     def __getitem__(self, index):
-        userIdx, dbpediaId, context_vector, context_mask, context_pos, context_vm, concept_mentioned, dbpedia_mentioned, user_mentioned, response_vector, response_mask = self.datapre[index]
+        userIdx, dbpediaId, history_input_ids, history_attention_mask, response_input_ids, response_attention_mask, history_pos_idx_tree, history_pos_idx, history_abs_idx_tree, history_abs_idx, history_abs_idx_src = self.datapre[index]
+        assert history_abs_idx == history_abs_idx_src[-1]
+        context_vector = np.array((history_input_ids + [self.special_wordIdx['<eos>']] + [self.special_wordIdx['<pad>']] * (self.max_c_length - len(history_input_ids)))[:self.max_c_length])
+        context_mask = np.array((history_attention_mask + [self.special_wordIdx['<eos>']] + [self.special_wordIdx['<pad>']] * (self.max_c_length - len(history_attention_mask)))[:self.max_c_length])
+        response_vector = np.array((response_input_ids + [self.special_wordIdx['<pad>']] * (self.max_r_length - len(response_input_ids)))[:self.max_r_length])
+        response_mask = np.array((response_attention_mask + [self.special_wordIdx['<pad>']] * (self.max_r_length - len(response_attention_mask)))[:self.max_r_length])
+        # Calculate visible matrix
+        context_pos = []
+        for src_id, relates in history_pos_idx_tree:
+            context_pos.append(src_id)
+            for relate in relates:
+                context_pos.append(relate)
+        context_pos = np.array((context_pos + [self.max_c_length - 1] * (self.max_c_length - len(context_pos)))[:self.max_c_length])
+        # 构建可视矩阵
+        context_vm = np.zeros((history_abs_idx + 1, history_abs_idx + 1))
+        history_dbpedia_count = []
+        for src_id, relates in history_abs_idx_tree:
+            context_vm[src_id, history_abs_idx_src + relates] = 1
+            for i in range(0, len(relates), 2):
+                for j, (epoch_src_id, epoch_relates) in enumerate(history_dbpedia_count):
+                    context_vm[relates[i], [epoch_src_id] + epoch_relates] = 0.9 ** (len(history_dbpedia_count) - j)
+                    context_vm[relates[i + 1], [epoch_src_id] + epoch_relates] = 0.9 ** (len(history_dbpedia_count) - j)
+                context_vm[relates[i], [src_id] + relates[i:i + 2]] = 1
+                context_vm[relates[i + 1], [src_id] + relates[i:i + 2]] = 1
+            if len(relates) > 0:
+                history_dbpedia_count.append((src_id, relates))
+        if history_abs_idx < self.max_c_length:
+            context_vm = np.pad(context_vm, ((0, self.max_c_length - history_abs_idx - 1), (0, self.max_c_length - history_abs_idx - 1)), 'constant')
+        else:
+            context_vm = context_vm[:self.max_c_length, :self.max_c_length]
+
         concept_vector = np.zeros(self.n_concept)
-        for con in concept_mentioned:
-            if con != 0:
-                concept_vector[con] = 1
+        concept_vector[context_vector[context_mask == self.special_wordIdx['<concept>']] - self.vocab_size] = 1
         dbpedia_vector = np.zeros(self.n_dbpedia)
-        for dbpedia in dbpedia_mentioned:
-            if dbpedia != 0:
-                dbpedia_vector[dbpedia] = 1
-        return userIdx, torch.tensor(dbpediaId, dtype=torch.long), torch.tensor(context_vector, dtype=torch.long), torch.tensor(context_mask, dtype=torch.long), context_pos, torch.tensor(context_vm, dtype=torch.long), torch.tensor(concept_mentioned, dtype=torch.long), torch.tensor(dbpedia_mentioned, dtype=torch.long), torch.tensor(user_mentioned, dtype=torch.long), torch.tensor(response_vector, dtype=torch.long), torch.tensor(response_mask, dtype=torch.long), concept_vector, dbpedia_vector
+        dbpedia_vector[context_vector[context_mask == self.special_wordIdx['<dbpedia>']] - self.vocab_size-self.n_concept] = 1
+        user_vector = np.zeros(self.n_user)
+        user_vector[context_vector[context_mask == self.special_wordIdx['<user>']] - self.vocab_size-self.n_concept-self.n_dbpedia-self.n_relations] = 1
+        return userIdx, torch.tensor(dbpediaId, dtype=torch.long), torch.tensor(context_vector, dtype=torch.long), torch.tensor(context_mask, dtype=torch.long), context_pos, torch.tensor(context_vm, dtype=torch.float64), torch.tensor(response_vector, dtype=torch.long), torch.tensor(response_mask, dtype=torch.long), concept_vector, dbpedia_vector, user_vector
 
     def __len__(self):
         return len(self.datapre)
