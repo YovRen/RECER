@@ -27,7 +27,7 @@ class TrainLoop:
         self.n_relations = 64  # 46+18
         self.n_bases = 8
         self.hidden_dim = 128
-        self.max_c_length = 512
+        self.max_c_length = 256
         self.max_r_length = 30
         self.embedding_size = 300
         self.n_heads = 2
@@ -36,7 +36,6 @@ class TrainLoop:
         self.dropout = 0.1
         self.attention_dropout = 0.0
         self.relu_dropout = 0.1
-        self.encoder_output_pooling = 'first'
         self.movieIds = pkl.load(open(self.crs_data_path + "/redial_movieIds.pkl", "rb"))
         self.movieId2movie = json.load(open(self.crs_data_path + '/redial_movieId2movie.jsonl', encoding='utf-8'))
         self.text2movie = pkl.load(open(self.crs_data_path + '/redial_text2movie.pkl', 'rb'))
@@ -52,12 +51,12 @@ class TrainLoop:
         self.word2wordEmb = np.load(self.crs_data_path + '/redial_word2wordEmb.npy')
         self.special_wordIdx = {'<pad>': 0, '<dbpedia>': 1, '<related>': 2, '<relation>': 3, '<concept>': 4, '<word>': 5, '<unk>': 6, '<user>': 7, '<mood>': 8, '<split>': 9, '<eos>': 10}
         self.vocab_size = len(self.word2wordIdx) + len(self.special_wordIdx)
-        self.train_dataset = CRSDataset('toy_test', self)
-        self.valid_dataset = CRSDataset('toy_test', self)
-        self.test_dataset = CRSDataset('toy_test', self)
-        # self.train_dataset = CRSDataset('train', self)
-        # self.valid_dataset = CRSDataset('valid', self)
-        # self.test_dataset = CRSDataset('test', self)
+        # self.train_dataset = CRSDataset('toy_test', self)
+        # self.valid_dataset = CRSDataset('toy_test', self)
+        # self.test_dataset = CRSDataset('toy_test', self)
+        self.train_dataset = CRSDataset('train', self)
+        self.valid_dataset = CRSDataset('valid', self)
+        self.test_dataset = CRSDataset('test', self)
         self.dbpedia_edge_list = self.train_dataset.dbpedia_edge_list.to(self.device)
         self.concept_edge_sets = self.train_dataset.concept_edge_sets.to(self.device)
         self.train_dataloader = DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=False, drop_last=True)
@@ -77,9 +76,9 @@ class TrainLoop:
             losses = []
             bare_num = 0
             bare_value = 10000
-            for num, (userIdx, dbpediaId, context_vector, context_mask, context_pos, context_vm, response_vector, response_mask, concept_vector, dbpedia_vector, user_vector) in enumerate(tqdm(self.train_dataloader)):
+            for num, (userIdx, dbpediaId, context_vector, context_mask, context_pos, context_vm, response_vector, concept_vector, dbpedia_vector, user_vector) in enumerate(tqdm(self.train_dataloader)):
                 self.optimizer.zero_grad()
-                info_loss, rec_scores, rec_loss, rec2_scores, rec2_loss, predict_vector, gen_loss = self.model(userIdx.to(self.device), dbpediaId.to(self.device), context_vector.to(self.device), context_mask.to(self.device), context_pos.to(self.device), context_vm.to(self.device), response_vector.to(self.device), response_mask.to(self.device), concept_vector.to(self.device), dbpedia_vector.to(self.device), user_vector.to(self.device))
+                info_loss, rec_scores, rec_loss, rec2_scores, rec2_loss, predict_vector, gen_loss = self.model(userIdx.to(self.device), dbpediaId.to(self.device), context_vector.to(self.device), context_mask.to(self.device), context_pos.to(self.device), context_vm.to(self.device), response_vector.to(self.device), concept_vector.to(self.device), dbpedia_vector.to(self.device), user_vector.to(self.device))
                 if i < rec_epoch:
                     joint_loss = rec_loss + 0.025*info_loss
                 else:
@@ -158,10 +157,10 @@ class TrainLoop:
         tokens_response = []
         tokens_predict = []
         tokens_context = []
-        for userIdx, dbpediaId, context_vector, context_mask, context_pos, context_vm, response_vector, response_mask, concept_vector, dbpedia_vector, user_vector in tqdm(val_dataloader):
+        for userIdx, dbpediaId, context_vector, context_mask, context_pos, context_vm, response_vector, concept_vector, dbpedia_vector, user_vector in tqdm(val_dataloader):
             with torch.no_grad():
-                _, rec_scores, rec_loss, rec2_scores, rec2_loss, _, gen_loss = self.model(userIdx.to(self.device), dbpediaId.to(self.device), context_vector.to(self.device), context_mask.to(self.device), context_pos.to(self.device), context_vm.to(self.device), response_vector.to(self.device), response_mask.to(self.device), concept_vector.to(self.device), dbpedia_vector.to(self.device), user_vector.to(self.device))
-                _, _, _, _, _, predict_vector, _ = self.model(userIdx.to(self.device), dbpediaId.to(self.device), context_vector.to(self.device), context_mask.to(self.device), context_pos.to(self.device), context_vm.to(self.device), None, None, concept_vector.to(self.device), dbpedia_vector.to(self.device), user_vector.to(self.device))
+                _, rec_scores, rec_loss, rec2_scores, rec2_loss, _, gen_loss = self.model(userIdx.to(self.device), dbpediaId.to(self.device), context_vector.to(self.device), context_mask.to(self.device), context_pos.to(self.device), context_vm.to(self.device), response_vector.to(self.device).to(self.device), concept_vector.to(self.device), dbpedia_vector.to(self.device), user_vector.to(self.device))
+                _, _, _, _, _, predict_vector, _ = self.model(userIdx.to(self.device), dbpediaId.to(self.device), context_vector.to(self.device), context_mask.to(self.device), context_pos.to(self.device), context_vm.to(self.device), None, concept_vector.to(self.device), dbpedia_vector.to(self.device), user_vector.to(self.device))
             self.metrics_rec["rec_loss"] += rec_loss.item()
             self.metrics_rec["rec2_loss"] += rec2_loss.item()
             self.metrics_gen['gen_loss'] += gen_loss.item()

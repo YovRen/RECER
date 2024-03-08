@@ -2,6 +2,7 @@ import torch, math
 import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.nn import TransformerDecoder
 from torch_geometric.nn.conv.rgcn_conv import RGCNConv
 from torch_geometric.nn.conv.gcn_conv import GCNConv
 from sklearn.metrics import mutual_info_score
@@ -175,157 +176,32 @@ class TransformerDecoder4KGLayer(nn.Module):
         return x
 
 
-class Bert4KGModel(nn.Module):
+class TransformerEncoder(nn.Module):
     def __init__(self, args):
-        super().__init__()
-        self.vocab_size = args.vocab_size
-        self.batch_size = args.batch_size
-        self.n_user = args.n_user
-        self.n_concept = args.n_concept
-        self.n_dbpedia = args.n_dbpedia
-        self.n_mood = args.n_mood
-        self.n_relations = args.n_relations
-        self.batch_size = args.batch_size
-        self.n_bases = args.n_bases
-        self.word2wordEmb = args.word2wordEmb
-        self.special_wordIdx = args.special_wordIdx
-        self.hidden_dim = args.hidden_dim
-        self.embedding_size = args.embedding_size
-        self.max_r_length = args.max_r_length
-        self.max_c_length = args.max_c_length
+        super(TransformerEncoder, self).__init__()
         self.n_heads = args.n_heads
-        self.n_layers = args.n_layers
+        self.embedding_size = args.embedding_size
         self.ffn_size = args.ffn_size
+        self.n_layers = args.n_layers
+        self.vocab_size = args.vocab_size
         self.dropout = args.dropout
         self.attention_dropout = args.attention_dropout
         self.relu_dropout = args.relu_dropout
+        self.max_c_length = args.max_c_length
+        self.special_wordIdx = args.special_wordIdx
+        self.n_mood = args.n_mood
         self.device = args.device
-        # 生成部分db_attn，encoder_states_kg部分的参数
-        self.concept_GCN = GCNConv(self.hidden_dim, self.hidden_dim)
-        self.dbpedia_edge_idx = args.dbpedia_edge_list[:, :2].t()
-        self.dbpedia_edge_type = args.dbpedia_edge_list[:, 2]
-        self.concept_edge_sets = args.concept_edge_sets
-        self.dbpedia_RGCN = RGCNConv(self.n_dbpedia + self.n_user, self.hidden_dim, self.n_relations, num_bases=self.n_bases)
-        self.concept_embeddings = nn.Embedding(self.n_concept, self.hidden_dim)
-        # rec_loss部分的参数
-        self.con_graph_attn = SelfAttentionLayer(self.hidden_dim, self.hidden_dim)
-        self.db_graph_attn = SelfAttentionLayer(self.hidden_dim, self.hidden_dim)
-        self.user_graph_attn = SelfAttentionLayer(self.hidden_dim, self.hidden_dim)
-        self.user_fc = nn.Linear(self.hidden_dim * 3, self.hidden_dim)
-        self.gate_fc = nn.Linear(self.hidden_dim, 1)
-        self.rec_output = nn.Linear(self.hidden_dim, self.n_dbpedia)
-        self.criterion_loss = nn.CrossEntropyLoss(reduce=False)
-        # info_loss部分的参数
-        self.user_con_info_fc = nn.Linear(self.hidden_dim * 2, self.hidden_dim)
-        self.user_db_info_fc = nn.Linear(self.hidden_dim * 2, self.hidden_dim)
-        self.db_con_info_fc = nn.Linear(self.hidden_dim * 2, self.hidden_dim)
-        self.con_info_fc = nn.Linear(self.hidden_dim, self.hidden_dim)
-        self.user_info_fc = nn.Linear(self.hidden_dim, self.hidden_dim)
-        self.db_info_fc = nn.Linear(self.hidden_dim, self.hidden_dim)
-        self.con_output = nn.Linear(self.hidden_dim, self.n_concept)
-        self.db_output = nn.Linear(self.hidden_dim, self.n_dbpedia)
-        self.user_output = nn.Linear(self.hidden_dim, self.n_user)
-        self.mse_loss = nn.MSELoss(size_average=False, reduce=False)
-        self.mine_layers = nn.Sequential(nn.Linear(3 * self.hidden_dim, self.hidden_dim), nn.ReLU(), nn.Linear(self.hidden_dim, 1))
-        # encoder预处理部分的参数
-        self.user_embeddings_fc = nn.Linear(self.hidden_dim, self.embedding_size)
-        self.dbpedia_embeddings_fc = nn.Linear(self.hidden_dim, self.embedding_size)
-        self.concept_embeddings_fc = nn.Linear(self.hidden_dim, self.embedding_size)
-        self.relation_embeddings = nn.Embedding(self.n_relations, self.embedding_size)
+        self.drop = nn.Dropout(p=self.dropout)
+        self.layer_norm = nn.LayerNorm(self.embedding_size)
         self.mood_attn = SelfAttentionLayer(self.embedding_size, self.embedding_size)
         self.mood_attn_fc = nn.Linear(self.embedding_size, self.n_mood)
         self.mood_embeddings = nn.Embedding(self.n_mood, self.embedding_size)
-        self.word_embeddings = nn.Embedding(self.vocab_size, self.embedding_size, self.special_wordIdx['<pad>'])
-        self.word_embeddings.weight.data.copy_(torch.from_numpy(self.word2wordEmb))
-        nn.init.normal_(self.concept_embeddings.weight, mean=0, std=self.embedding_size ** -0.5)
-        nn.init.constant_(self.concept_embeddings.weight[self.special_wordIdx['<pad>']], 0)
+        nn.init.normal_(self.mood_embeddings.weight, mean=0, std=self.embedding_size ** -0.5)
         self.position_embeddings = nn.Embedding(self.max_c_length, self.embedding_size)
         nn.init.normal_(self.position_embeddings.weight, 0, self.embedding_size ** -0.5)
-        self.layer_norm = nn.LayerNorm(self.embedding_size)
-        self.drop = nn.Dropout(self.dropout)
-        # rec2_loss部分的参数
-        self.encoder_layers = nn.ModuleList([TransformerEncoderLayer(self.n_heads, self.embedding_size, self.ffn_size, attention_dropout=self.attention_dropout, relu_dropout=self.relu_dropout, dropout=self.dropout) for _ in range(self.n_layers)])
-        self.encoder_output_pooling = args.encoder_output_pooling
-        self.user_db_con_rec_fc = nn.Linear(self.hidden_dim, self.embedding_size)
-        self.encoder_latent_rec_fc = nn.Linear(self.embedding_size, self.embedding_size)
-        self.encoder_latent_rec2_fc = nn.Linear(self.embedding_size, self.hidden_dim)
-        self.rec2_output = nn.Linear(self.hidden_dim, self.n_dbpedia)
-        # gen_loss部分的参数
-        self.decoder_layers = nn.ModuleList([TransformerDecoder4KGLayer(self.n_heads, self.embedding_size, self.ffn_size, attention_dropout=self.attention_dropout, relu_dropout=self.relu_dropout, dropout=self.dropout) for _ in range(self.n_layers)])
-        self.con_graph_fc = nn.Linear(self.hidden_dim, self.embedding_size)
-        self.db_graph_fc = nn.Linear(self.hidden_dim, self.embedding_size)
-        self.user_graph_fc = nn.Linear(self.hidden_dim, self.embedding_size)
-        self.con_graph_attn_fc = nn.Linear(self.hidden_dim, self.embedding_size)
-        self.db_graph_attn_fc = nn.Linear(self.hidden_dim, self.embedding_size)
-        self.user_graph_attn_fc = nn.Linear(self.hidden_dim, self.embedding_size)
-        self.graph_latent_fc = nn.Linear(4 * self.embedding_size, self.embedding_size)
-        self.graph_latent_gen_fc = nn.Linear(self.embedding_size, self.vocab_size + self.n_concept)
-        # for name, param in self.named_parameters():
-        #     print(f"Module: {name}, Parameters: {param.numel()}")
-        total_params = sum(p.numel() for p in self.parameters())
-        print(f"Total parameters in the model: {total_params}")
+        self.layers = nn.ModuleList([TransformerEncoderLayer(self.n_heads, self.embedding_size, self.ffn_size, attention_dropout=self.attention_dropout, relu_dropout=self.relu_dropout, dropout=self.dropout) for _ in range(self.n_layers)])
 
-    def estimate_pdf(self, data, bins=50, alpha=1e-5):
-        hist = torch.histc(data, bins=bins, min=data.min().item(), max=data.max().item())
-        pdf = hist / (hist.sum() + alpha)  # 添加平滑项防止除零错误
-        return pdf
-
-    def compute_mutual_information(self, vec1, vec2, vec3, bins=50, alpha=1e-5):
-        # 估计联合概率密度函数
-        joint_pdf = self.estimate_pdf(torch.cat((vec1, vec2, vec3)), bins=bins, alpha=alpha)
-        # 估计边缘概率密度函数
-        marginal_pdf1 = self.estimate_pdf(vec1, bins=bins, alpha=alpha)
-        marginal_pdf2 = self.estimate_pdf(vec2, bins=bins, alpha=alpha)
-        marginal_pdf3 = self.estimate_pdf(vec3, bins=bins, alpha=alpha)
-        # 计算三元互信息
-        mi = torch.sum(joint_pdf * torch.log2(joint_pdf / (marginal_pdf1 * marginal_pdf2 * marginal_pdf3 + alpha)))
-        return mi
-
-    def forward(self, userIdx, dbpediaId, context_vector, context_mask, context_pos, context_vm, response_vector, response_mask, concept_vector, dbpedia_vector, user_vector):
-        con_nodes_features = self.concept_GCN(self.concept_embeddings.weight, self.concept_edge_sets)
-        dbpedia_nodes_features = self.dbpedia_RGCN(None, self.dbpedia_edge_idx, self.dbpedia_edge_type)
-        db_nodes_features = dbpedia_nodes_features[:-self.n_user]
-        user_nodes_features = dbpedia_nodes_features[-self.n_user:]
-        db_graph_attn_emb = torch.stack([self.db_graph_attn(db_nodes_features[[b[0] for b in row[row.nonzero()].tolist()]]) for row in torch.where(context_mask == self.special_wordIdx['<dbpedia>'], context_vector - self.vocab_size - self.n_concept, torch.tensor(0))])
-        con_graph_attn_emb = torch.stack([self.con_graph_attn(con_nodes_features[[b[0] for b in row[row.nonzero()].tolist()]]) for row in torch.where(context_mask == self.special_wordIdx['<concept>'], context_vector - self.vocab_size, torch.tensor(0))])
-        user_graph_attn_emb = torch.stack([self.user_graph_attn(user_nodes_features[[b[0] for b in row[row.nonzero()].tolist()]]) for row in torch.where(context_mask == self.special_wordIdx['<user>'], context_vector - self.vocab_size - self.n_concept - self.n_dbpedia - self.n_relations, torch.tensor(0))])
-
-        # 通过user_emb和db_nodes_features计算rec_scores，对比labels得到rec_loss
-        user_db_info_emb = self.user_db_info_fc(torch.cat([user_graph_attn_emb, db_graph_attn_emb], dim=-1))
-        user_con_info_emb = self.user_con_info_fc(torch.cat([user_graph_attn_emb, con_graph_attn_emb], dim=-1))
-        db_con_info_emb = self.db_con_info_fc(torch.cat([db_graph_attn_emb, con_graph_attn_emb], dim=-1))
-        con_scores = F.linear(user_db_info_emb, con_nodes_features, self.con_output.bias)
-        db_scores = F.linear(user_con_info_emb, db_nodes_features, self.db_output.bias)
-        user_scores = F.linear(db_con_info_emb, user_nodes_features, self.user_output.bias)
-        info_db_loss = torch.mean(torch.sum(self.mse_loss(db_scores, dbpedia_vector.float()), dim=-1))
-        info_con_loss = torch.mean(torch.sum(self.mse_loss(con_scores, concept_vector.float()), dim=-1))
-        info_user_loss = torch.mean(torch.sum(self.mse_loss(user_scores, user_vector.float()), dim=-1))
-        info_loss = self.compute_mutual_information(con_graph_attn_emb, db_graph_attn_emb, user_graph_attn_emb)+info_db_loss
-
-        # tiled_x = torch.cat([user_graph_attn_emb, user_graph_attn_emb, ], dim=0)
-        # concat_y = torch.cat([db_graph_attn_emb, db_graph_attn_emb[torch.randperm(self.batch_size)]], dim=0)
-        # concat_z = torch.cat([db_graph_attn_emb, db_graph_attn_emb[torch.randperm(self.batch_size)]], dim=0)
-        # inputs = torch.cat([tiled_x, concat_y, concat_z], dim=1)
-        # logits = self.mine_layers(inputs)
-        # pred_xyz = logits[:self.batch_size]
-        # pred_x_y_z = logits[self.batch_size:]
-        # info_loss = np.log2(np.exp(1)) * (torch.mean(pred_xyz) + torch.log(torch.mean(torch.exp(pred_x_y_z))))
-
-        # 通过user_emb和db_nodes_features计算rec_scores，对比labels得到rec_loss
-        user_db_con_emb = self.user_fc(torch.cat([user_graph_attn_emb, con_graph_attn_emb, db_graph_attn_emb], dim=-1))
-        rec_scores = F.linear(user_db_con_emb, db_nodes_features, self.rec_output.bias)
-        rec_loss = torch.mean(self.criterion_loss(rec_scores, dbpediaId) * (dbpediaId != 0).to(self.device))
-        # 计算gen_scores和preds--------可以把历史记录的movie_fc加上--------------------|##|Aab******#|Bc******#|Ac******#|Bc********#|-------------
-        db_graph_fc_emb = self.db_graph_fc(db_nodes_features[context_vector])
-        con_graph_fc_emb = self.con_graph_fc(con_nodes_features[context_vector])
-        user_graph_fc_emb = self.user_graph_fc(user_nodes_features[context_vector])
-        db_graph_attn_fc_emb = self.db_graph_attn_fc(db_graph_attn_emb)
-        con_graph_attn_fc_emb = self.con_graph_attn_fc(con_graph_attn_emb)
-        user_graph_attn_fc_emb = self.user_graph_attn_fc(con_graph_attn_emb)
-        dbpedia_embeddings = self.dbpedia_embeddings_fc(db_nodes_features)
-        user_embeddings = self.user_embeddings_fc(user_nodes_features)
-        concept_embeddings = self.concept_embeddings_fc(con_nodes_features)
-        sum_embeddings = torch.cat([self.word_embeddings.weight, concept_embeddings, dbpedia_embeddings, self.relation_embeddings.weight, user_embeddings], dim=0)
+    def forward(self, sum_embeddings, context_vector, context_mask, context_pos, context_vm):
         context_emb = sum_embeddings[context_vector]
         last_row = -1
         last_col = -1
@@ -337,70 +213,211 @@ class Bert4KGModel(nn.Module):
                 context_emb[[indice[0], indice[1]]] = self.mood_embeddings(torch.argmax(self.mood_attn_fc(self.mood_attn(context_emb[indice[0], 0:indice[1]]))))
                 last_row = indice[0]
                 last_col = indice[1]
-        context_emb = context_emb * torch.tensor(np.sqrt(self.embedding_size)).to(self.device) + self.position_embeddings(context_pos) + sum_embeddings[context_mask]
+        context_emb *= torch.tensor(np.sqrt(self.embedding_size)).to(self.device)
+        context_emb += self.position_embeddings(context_pos)
+        context_emb += sum_embeddings[context_mask]
         context_emb = self.drop(self.layer_norm(context_emb))
         for i in range(self.n_layers):
-            context_emb = self.encoder_layers[i](context_emb, context_vm)
-        # Target.
-        if self.encoder_output_pooling == "mean":
-            encoder_latent = torch.mean(context_emb, dim=1)
-        elif self.encoder_output_pooling == "max":
-            encoder_latent = torch.max(context_emb, dim=1)[0]
-        elif self.encoder_output_pooling == "last":
-            encoder_latent = context_emb[:, -1, :]
-        else:
-            encoder_latent = context_emb[:, 0, :]
-        encoder_latent_rec_emb = torch.tanh(self.encoder_latent_rec_fc(encoder_latent))
-        user_db_con_rec_emb = torch.tanh(self.user_db_con_rec_fc(user_db_con_emb))
-        rec2_scores = self.encoder_latent_rec2_fc(encoder_latent_rec_emb + user_db_con_rec_emb)
-        rec2_scores = F.linear(rec2_scores, db_nodes_features, self.rec2_output.bias)
-        rec2_loss = torch.mean(self.criterion_loss(rec2_scores, dbpediaId) * (dbpediaId != 0).to(self.device))
+            context_emb = self.layers[i](context_emb, context_vm)
+        return context_emb
 
+
+class TransformerDecoder4KG(nn.Module):
+    def __init__(self, args):
+        super().__init__()
+        self.n_heads = args.n_heads
+        self.embedding_size = args.embedding_size
+        self.ffn_size = args.ffn_size
+        self.n_layers = args.n_layers
+        self.vocab_size = args.vocab_size
+        self.dropout = args.dropout
+        self.attention_dropout = args.attention_dropout
+        self.relu_dropout = args.relu_dropout
+        self.max_c_length = args.max_c_length
+        self.special_wordIdx = args.special_wordIdx
+        self.batch_size = args.batch_size
+        self.device = args.device
+        self.drop = nn.Dropout(p=self.dropout)
+        self.layer_norm = nn.LayerNorm(self.embedding_size)
+        self.position_embeddings = nn.Embedding(self.max_c_length, self.embedding_size)
+        nn.init.normal_(self.position_embeddings.weight, 0, self.embedding_size ** -0.5)
+        self.layers = nn.ModuleList([TransformerDecoder4KGLayer(self.n_heads, self.embedding_size, self.ffn_size, attention_dropout=self.attention_dropout, relu_dropout=self.relu_dropout, dropout=self.dropout) for _ in range(self.n_layers)])
+
+    def forward(self, sum_embeddings, predict_vector, encoder_latent_emb, con_graph_fc_emb, db_graph_fc_emb, user_graph_fc_emb, context_mask):
+        encoder_latent_emb_mask = (context_mask != self.special_wordIdx['<pad>'])
+        con_graph_fc_emb_mask = (context_mask != self.special_wordIdx['<concept>'])
+        db_graph_fc_emb_mask = (context_mask != self.special_wordIdx['<dbpedia>'])
+        user_graph_fc_emb_mask = (context_mask != self.special_wordIdx['<user>'])
+        predict_pos = torch.arange(predict_vector.shape[1], dtype=torch.long).unsqueeze(0).expand(self.batch_size, predict_vector.shape[1]).to(self.device)
+        predict_emb = sum_embeddings[predict_vector]
+        predict_emb *= torch.tensor(np.sqrt(self.embedding_size)).to(self.device)
+        predict_emb += self.position_embeddings(predict_pos)
+        predict_emb = self.drop(self.layer_norm(predict_emb))
+        predict_vm = torch.tril(torch.ones(predict_emb.size(0), predict_emb.size(1), predict_emb.size(1))).to(self.device)
+        for layer in self.layers:
+            predict_emb = layer(predict_emb, predict_vm, encoder_latent_emb, encoder_latent_emb_mask, con_graph_fc_emb, con_graph_fc_emb_mask, db_graph_fc_emb, db_graph_fc_emb_mask, user_graph_fc_emb, user_graph_fc_emb_mask)
+        return predict_emb
+
+
+class Bert4KGModel(nn.Module):
+    def __init__(self, args):
+        super().__init__()
+        self.vocab_size = args.vocab_size
+        self.batch_size = args.batch_size
+        self.n_user = args.n_user
+        self.n_concept = args.n_concept
+        self.n_dbpedia = args.n_dbpedia
+        self.n_relations = args.n_relations
+        self.batch_size = args.batch_size
+        self.n_bases = args.n_bases
+        self.word2wordEmb = args.word2wordEmb
+        self.special_wordIdx = args.special_wordIdx
+        self.hidden_dim = args.hidden_dim
+        self.embedding_size = args.embedding_size
+        self.max_c_length = args.max_c_length
+        self.max_r_length = args.max_r_length
+        self.device = args.device
+        # 生成部分db_attn，encoder_states_kg部分的参数
+        self.concept_GCN = GCNConv(self.hidden_dim, self.hidden_dim)
+        self.dbpedia_edge_idx = args.dbpedia_edge_list[:, :2].t()
+        self.dbpedia_edge_type = args.dbpedia_edge_list[:, 2]
+        self.concept_edge_sets = args.concept_edge_sets
+        self.dbpedia_RGCN = RGCNConv(self.n_dbpedia + self.n_user, self.hidden_dim, self.n_relations, num_bases=self.n_bases)
+        self.concept_embeddings = nn.Embedding(self.n_concept, self.hidden_dim)
+        nn.init.normal_(self.concept_embeddings.weight, mean=0, std=self.embedding_size ** -0.5)
+        nn.init.constant_(self.concept_embeddings.weight[self.special_wordIdx['<pad>']], 0)
+        self.con_graph_attn = SelfAttentionLayer(self.hidden_dim, self.hidden_dim)
+        self.db_graph_attn = SelfAttentionLayer(self.hidden_dim, self.hidden_dim)
+        self.user_graph_attn = SelfAttentionLayer(self.hidden_dim, self.hidden_dim)
+        # info_loss部分的参数
+        self.user_con_info_fc = nn.Linear(self.hidden_dim * 2, self.hidden_dim)
+        self.user_db_info_fc = nn.Linear(self.hidden_dim * 2, self.hidden_dim)
+        self.db_con_info_fc = nn.Linear(self.hidden_dim * 2, self.hidden_dim)
+        self.con_output = nn.Linear(self.hidden_dim, self.n_concept)
+        self.db_output = nn.Linear(self.hidden_dim, self.n_dbpedia)
+        self.user_output = nn.Linear(self.hidden_dim, self.n_user)
+        self.mse_loss = nn.MSELoss(size_average=False, reduce=False)
+        # mutual_loss部分的参数
+        self.mine_layers = nn.Sequential(nn.Linear(3 * self.hidden_dim, self.hidden_dim), nn.ReLU(), nn.Linear(self.hidden_dim, 1))
+        # rec_loss部分的参数
+        self.user_db_con_fc = nn.Linear(self.hidden_dim * 3, self.hidden_dim)
+        self.graph_rec_output = nn.Linear(self.hidden_dim, self.n_dbpedia)
+        self.criterion_loss = nn.CrossEntropyLoss(reduce=False)
+        # rec2_loss部分的参数
+        self.graph_latent_fc = nn.Linear(self.hidden_dim, self.hidden_dim)
+        self.encoder = TransformerEncoder(args)
+        self.encoder_latent_fc = nn.Linear(self.embedding_size, self.hidden_dim)
+        self.encoder_graph_latent_fc = nn.Linear(2 * self.hidden_dim, self.hidden_dim)
+        self.encoder_graph_rec_output = nn.Linear(self.hidden_dim, self.n_dbpedia)
+        # sum_embeddings
+        self.word_embeddings = nn.Embedding(self.vocab_size, self.embedding_size, self.special_wordIdx['<pad>'])
+        self.word_embeddings.weight.data.copy_(torch.from_numpy(self.word2wordEmb))
+        self.dbpedia_embeddings_fc = nn.Linear(self.hidden_dim, self.embedding_size)
+        self.concept_embeddings_fc = nn.Linear(self.hidden_dim, self.embedding_size)
+        self.relation_embeddings = nn.Embedding(self.n_relations, self.embedding_size)
+        nn.init.normal_(self.relation_embeddings.weight, mean=0, std=self.embedding_size ** -0.5)
+        nn.init.constant_(self.relation_embeddings.weight[self.special_wordIdx['<pad>']], 0)
+        self.user_embeddings_fc = nn.Linear(self.hidden_dim, self.embedding_size)
+        # gen_loss部分的参数
+        self.con_graph_fc = nn.Linear(self.hidden_dim, self.embedding_size)
+        self.db_graph_fc = nn.Linear(self.hidden_dim, self.embedding_size)
+        self.user_graph_fc = nn.Linear(self.hidden_dim, self.embedding_size)
+        self.con_graph_attn_fc = nn.Linear(self.hidden_dim, self.embedding_size)
+        self.db_graph_attn_fc = nn.Linear(self.hidden_dim, self.embedding_size)
+        self.user_graph_attn_fc = nn.Linear(self.hidden_dim, self.embedding_size)
+        self.decoder = TransformerDecoder4KG(args)
+        self.decoder_graph_latent_fc = nn.Linear(4 * self.embedding_size, self.embedding_size)
+        # for name, param in self.named_parameters():
+        #     print(f"Module: {name}, Parameters: {param.numel()}")
+        total_params = sum(p.numel() for p in self.parameters())
+        print(f"Total parameters in the model: {total_params}")
+
+    def forward(self, userIdx, dbpediaId, context_vector, context_mask, context_pos, context_vm, response_vector, concept_vector, dbpedia_vector, user_vector):
+        # 获得基础特征
+        con_nodes_features = self.concept_GCN(self.concept_embeddings.weight, self.concept_edge_sets)
+        dbpedia_nodes_features = self.dbpedia_RGCN(None, self.dbpedia_edge_idx, self.dbpedia_edge_type)
+        db_nodes_features = dbpedia_nodes_features[:-self.n_user]
+        user_nodes_features = dbpedia_nodes_features[-self.n_user:]
+        # 也是基础特征
+        db_graph_attn_emb = torch.stack([self.db_graph_attn(db_nodes_features[[b[0] for b in row[row.nonzero()].tolist()]]) for row in torch.where(context_mask == self.special_wordIdx['<dbpedia>'], context_vector - self.vocab_size - self.n_concept, torch.tensor(0))])
+        con_graph_attn_emb = torch.stack([self.con_graph_attn(con_nodes_features[[b[0] for b in row[row.nonzero()].tolist()]]) for row in torch.where(context_mask == self.special_wordIdx['<concept>'], context_vector - self.vocab_size, torch.tensor(0))])
+        user_graph_attn_emb = torch.stack([self.user_graph_attn(user_nodes_features[[b[0] for b in row[row.nonzero()].tolist()]]) for row in torch.where(context_mask == self.special_wordIdx['<user>'], context_vector - self.vocab_size - self.n_concept - self.n_dbpedia - self.n_relations, torch.tensor(0))])
+        # info_loss
+        user_db_info_emb = self.user_db_info_fc(torch.cat([user_graph_attn_emb, db_graph_attn_emb], dim=-1))
+        user_con_info_emb = self.user_con_info_fc(torch.cat([user_graph_attn_emb, con_graph_attn_emb], dim=-1))
+        db_con_info_emb = self.db_con_info_fc(torch.cat([db_graph_attn_emb, con_graph_attn_emb], dim=-1))
+        con_scores = F.linear(user_db_info_emb, con_nodes_features, self.con_output.bias)
+        db_scores = F.linear(user_con_info_emb, db_nodes_features, self.db_output.bias)
+        user_scores = F.linear(db_con_info_emb, user_nodes_features, self.user_output.bias)
+        info_db_loss = torch.mean(torch.sum(self.mse_loss(db_scores, dbpedia_vector.float()), dim=-1))
+        info_con_loss = torch.mean(torch.sum(self.mse_loss(con_scores, concept_vector.float()), dim=-1))
+        info_user_loss = torch.mean(torch.sum(self.mse_loss(user_scores, user_vector.float()), dim=-1))
+        # mutual_loss
+        tiled_x = torch.cat([user_graph_attn_emb, user_graph_attn_emb], dim=0)
+        concat_y = torch.cat([db_graph_attn_emb, db_graph_attn_emb[torch.randperm(self.batch_size)]], dim=0)
+        concat_z = torch.cat([con_graph_attn_emb, con_graph_attn_emb[torch.randperm(self.batch_size)]], dim=0)
+        inputs = torch.cat([tiled_x, concat_y, concat_z], dim=1)
+        logits = self.mine_layers(inputs)
+        pred_xyz = logits[:self.batch_size]
+        pred_x_y_z = logits[self.batch_size:]
+        mutual_loss = - np.log2(np.exp(1)) * (torch.mean(pred_xyz) - torch.log(torch.mean(torch.exp(pred_x_y_z))))
+        info_loss = mutual_loss + info_db_loss
+        # 通过user_emb和db_nodes_features计算rec_scores，对比labels得到rec_loss
+        graph_latent_emb = self.user_db_con_fc(torch.cat([user_graph_attn_emb, con_graph_attn_emb, db_graph_attn_emb], dim=-1))
+        graph_rec_scores = F.linear(graph_latent_emb, db_nodes_features, self.graph_rec_output.bias)
+        graph_rec_loss = torch.mean(torch.sum(self.criterion_loss(graph_rec_scores, dbpediaId) * (dbpediaId != 0).to(self.device)))
+
+        # 计算gen_scores和preds--------可以把历史记录的movie_fc加上--------------------|##|Aab******#|Bc******#|Ac******#|Bc********#|-------------
+        # sum_embeddings
+        dbpedia_embeddings = self.dbpedia_embeddings_fc(db_nodes_features)
+        user_embeddings = self.user_embeddings_fc(user_nodes_features)
+        concept_embeddings = self.concept_embeddings_fc(con_nodes_features)
+        sum_embeddings = torch.cat([self.word_embeddings.weight, concept_embeddings, dbpedia_embeddings, self.relation_embeddings.weight, user_embeddings], dim=0)
+        # encoder
+        encoder_latent_emb = self.encoder(sum_embeddings, context_vector, context_mask, context_pos, context_vm)
+        divisor = (context_mask != self.special_wordIdx['<pad>']).type_as(encoder_latent_emb).sum(dim=1).unsqueeze(-1).clamp(min=1e-7)
+        encoder_latent_emb_ = encoder_latent_emb.sum(dim=1) / divisor
+        encoder_graph_latent_emb = self.encoder_graph_latent_fc(torch.cat([self.graph_latent_fc(graph_latent_emb), self.encoder_latent_fc(encoder_latent_emb_)], dim=-1))
+        encoder_graph_rec_scores = F.linear(encoder_graph_latent_emb, db_nodes_features, self.encoder_graph_rec_output.bias)
+        encoder_graph_rec_loss = torch.sum(self.criterion_loss(encoder_graph_rec_scores, dbpediaId) * (dbpediaId != 0).to(self.device))
+
+        # decoder
+        db_graph_fc_emb = self.db_graph_fc(db_nodes_features[torch.where(context_mask == self.special_wordIdx['<dbpedia>'], context_vector - self.vocab_size - self.n_concept, torch.tensor(0))])
+        con_graph_fc_emb = self.con_graph_fc(con_nodes_features[torch.where(context_mask == self.special_wordIdx['<concept>'], context_vector - self.vocab_size, torch.tensor(0))])
+        user_graph_fc_emb = self.user_graph_fc(user_nodes_features[torch.where(context_mask == self.special_wordIdx['<user>'], context_vector - self.vocab_size - self.n_concept - self.n_dbpedia - self.n_relations, torch.tensor(0))])
+        db_graph_attn_fc_emb = self.db_graph_attn_fc(db_graph_attn_emb)
+        con_graph_attn_fc_emb = self.con_graph_attn_fc(con_graph_attn_emb)
+        user_graph_attn_fc_emb = self.user_graph_attn_fc(con_graph_attn_emb)
         if response_vector is None:
             predict_vector = (userIdx + self.vocab_size + self.n_concept + self.n_dbpedia + self.n_relations).view(self.batch_size, 1)
-            predict_pos = torch.tensor([0], dtype=torch.long).expand(self.batch_size, 1).to(self.device)
-            predict_mask = torch.tensor([self.special_wordIdx['<user>']], dtype=torch.long).expand(self.batch_size, 1).to(self.device)
-            predict_emb = sum_embeddings[predict_vector] * torch.tensor(np.sqrt(self.embedding_size)).to(self.device) + self.position_embeddings(predict_pos) + sum_embeddings[predict_mask]
-            predict_emb = self.drop(self.layer_norm(predict_emb))
             for idx in range(self.max_r_length):
-                predict_emb = self.drop(self.layer_norm(predict_emb))
-                predict_vm = torch.ones(predict_emb.size(0), predict_emb.size(1), predict_emb.size(1))
-                for layer in self.decoder_layers:
-                    predict_emb = layer(predict_emb, torch.tril(predict_vm).to(self.device), context_emb, context_mask != self.special_wordIdx['<pad>'], con_graph_fc_emb, context_mask == self.special_wordIdx['<concept>'], db_graph_fc_emb, context_mask == self.special_wordIdx['<dbpedia>'], user_graph_fc_emb, context_mask == self.special_wordIdx['<user>'])
-                decoder_latent = predict_emb[:, -1:, :]
-                graph_latent = self.graph_latent_fc(torch.cat([con_graph_attn_fc_emb.unsqueeze(1), db_graph_attn_fc_emb.unsqueeze(1),user_graph_attn_fc_emb.unsqueeze(1), decoder_latent], -1))
-                gen_scores = F.linear(decoder_latent, sum_embeddings[:self.vocab_size + self.n_concept]) + self.graph_latent_gen_fc(graph_latent)
+                decoder_latent_emb = self.decoder(sum_embeddings, predict_vector, encoder_latent_emb, con_graph_fc_emb, db_graph_fc_emb, user_graph_fc_emb, context_mask)
+                last_token_emb = decoder_latent_emb[:, -1:, :]
+                decoder_graph_latent_fc_emb = self.decoder_graph_latent_fc(torch.cat([con_graph_attn_fc_emb.unsqueeze(1), db_graph_attn_fc_emb.unsqueeze(1), user_graph_attn_fc_emb.unsqueeze(1), last_token_emb], dim=-1))
+                gen_scores = F.linear(decoder_graph_latent_fc_emb, sum_embeddings[:self.vocab_size + self.n_concept])
                 _, last_token = gen_scores.max(dim=-1)
-                predict_emb = torch.cat([predict_emb, sum_embeddings[last_token]], dim=1)
                 predict_vector = torch.cat([predict_vector, last_token], dim=1)
                 if ((predict_vector == self.special_wordIdx['<eos>']).sum(dim=1) > 0).sum().item() == self.batch_size:
                     break
             predict_vector = predict_vector[:, 1:]
             gen_loss = None
         else:
-            response_pos = torch.arange(response_vector.size(1)).expand(self.batch_size, response_vector.size(1)).to(self.device)
-            response_emb = sum_embeddings[response_vector] * torch.tensor(np.sqrt(self.embedding_size)).to(self.device) + self.position_embeddings(response_pos) + sum_embeddings[response_mask]
-            response_emb = self.drop(self.layer_norm(response_emb))
-            response_vm = torch.zeros(response_vector.size(0), response_vector.size(1), response_vector.size(1))
-            for layer in self.decoder_layers:
-                response_emb = layer(response_emb, torch.tril(response_vm).to(self.device), context_emb, context_mask != self.special_wordIdx['<pad>'], con_graph_fc_emb, context_mask == self.special_wordIdx['<concept>'], db_graph_fc_emb, context_mask == self.special_wordIdx['<dbpedia>'], user_graph_fc_emb, context_mask == self.special_wordIdx['<user>'])
-            decoder_latent = response_emb
-            graph_latent = self.graph_latent_fc(torch.cat([con_graph_attn_fc_emb.unsqueeze(1).repeat(1, self.max_r_length, 1), db_graph_attn_fc_emb.unsqueeze(1).repeat(1, self.max_r_length, 1), decoder_latent], -1))
-            gen_scores = F.linear(decoder_latent, sum_embeddings[:self.vocab_size + self.n_concept]) + self.graph_latent_gen_fc(graph_latent)
-            # 计算损失的过程中，需要去除添加的部分的影响
+            decoder_latent_emb = self.decoder(sum_embeddings, response_vector, encoder_latent_emb, con_graph_fc_emb, db_graph_fc_emb, user_graph_fc_emb, context_mask)
+            decoder_graph_latent_fc_emb = self.decoder_graph_latent_fc(torch.cat([con_graph_attn_fc_emb.unsqueeze(1).repeat(1, self.max_r_length, 1), db_graph_attn_fc_emb.unsqueeze(1).repeat(1, self.max_r_length, 1), user_graph_attn_fc_emb.unsqueeze(1).repeat(1, self.max_r_length, 1), decoder_latent_emb], dim=-1))
+            gen_scores = F.linear(decoder_graph_latent_fc_emb, sum_embeddings[:self.vocab_size + self.n_concept])
             gen_loss = torch.mean(self.criterion_loss(gen_scores[:, :-1].reshape(-1, self.vocab_size + self.n_concept), response_vector[:, 1:].reshape(-1)))
             predict_vector = None
-        return info_loss, rec_scores, rec_loss, rec2_scores, rec2_loss, predict_vector, gen_loss
+        return info_loss, graph_rec_scores, graph_rec_loss, encoder_graph_rec_scores, encoder_graph_rec_loss, predict_vector, gen_loss
 
     def freeze_kg(self, freezeKG):
         if freezeKG:
-            params = [self.dbpedia_RGCN.parameters(), self.concept_GCN.parameters(), self.concept_embeddings.parameters(), self.con_graph_attn.parameters(), self.db_graph_attn.parameters(), self.user_graph_attn.parameters(), self.user_fc.parameters(), self.gate_fc.parameters(), self.rec_output.parameters()]
+            params = [self.dbpedia_RGCN.parameters(), self.concept_GCN.parameters(), self.concept_embeddings.parameters(), self.con_graph_attn.parameters(), self.db_graph_attn.parameters(), self.db_graph_attn.parameters(), self.user_graph_attn.parameters(), self.user_db_con_fc.parameters(), self.graph_rec_output.parameters()]
             for param in params:
                 for pa in param:
                     pa.requires_grad = False
             print(f"Freeze parameters in the model")
         else:
-            params = [self.dbpedia_RGCN.parameters(), self.concept_GCN.parameters(), self.concept_embeddings.parameters(), self.con_graph_attn.parameters(), self.db_graph_attn.parameters(), self.user_graph_attn.parameters(), self.user_fc.parameters(), self.gate_fc.parameters(), self.rec_output.parameters()]
+            params = [self.dbpedia_RGCN.parameters(), self.concept_GCN.parameters(), self.concept_embeddings.parameters(), self.con_graph_attn.parameters(), self.db_graph_attn.parameters(), self.db_graph_attn.parameters(), self.user_graph_attn.parameters(), self.user_db_con_fc.parameters(), self.graph_rec_output.parameters()]
             for param in params:
                 for pa in param:
                     pa.requires_grad = True
@@ -408,12 +425,12 @@ class Bert4KGModel(nn.Module):
 
     def save_model(self, tag):
         if tag == "rec":
-            torch.save(self.state_dict(), 'rec_net_parameter1.pkl')
+            torch.save(self.state_dict(), 'rec_net_parameter.pkl')
         else:
             torch.save(self.state_dict(), 'gen_net_parameter.pkl')
 
     def load_model(self, tag):
         if tag == "rec":
-            self.load_state_dict(torch.load('rec_net_parameter1.pkl'), strict=False)
+            self.load_state_dict(torch.load('rec_net_parameter.pkl'), strict=False)
         else:
             self.load_state_dict(torch.load('gen_net_parameter.pkl'), strict=False)

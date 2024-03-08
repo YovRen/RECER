@@ -175,7 +175,7 @@ class CRSDataset(Dataset):
                 history_abs_idx_src.extend([src_id + history_abs_idx + 1 for src_id in message_dict['abs_idx_src']])
                 history_abs_idx += (message_dict['abs_idx'] + 1)
                 history_pos_idx += (message_dict['pos_idx'] + 1)
-        self.datapre = self.datapre[:len(self.datapre) // 5]
+        # self.datapre = self.datapre[:len(self.datapre) // 5]
 
     def dbpedia_edge_list(self):
         edge_list = []
@@ -283,7 +283,6 @@ class CRSDataset(Dataset):
         context_vector = np.array((history_input_ids + [self.special_wordIdx['<eos>']] + [self.special_wordIdx['<pad>']] * (self.max_c_length - len(history_input_ids)))[:self.max_c_length])
         context_mask = np.array((history_attention_mask + [self.special_wordIdx['<eos>']] + [self.special_wordIdx['<pad>']] * (self.max_c_length - len(history_attention_mask)))[:self.max_c_length])
         response_vector = np.array((response_input_ids + [self.special_wordIdx['<pad>']] * (self.max_r_length - len(response_input_ids)))[:self.max_r_length])
-        response_mask = np.array((response_attention_mask + [self.special_wordIdx['<pad>']] * (self.max_r_length - len(response_attention_mask)))[:self.max_r_length])
         # Calculate visible matrix
         context_pos = []
         for src_id, relates in history_pos_idx_tree:
@@ -315,7 +314,7 @@ class CRSDataset(Dataset):
         dbpedia_vector[context_vector[context_mask == self.special_wordIdx['<dbpedia>']] - self.vocab_size-self.n_concept] = 1
         user_vector = np.zeros(self.n_user)
         user_vector[context_vector[context_mask == self.special_wordIdx['<user>']] - self.vocab_size-self.n_concept-self.n_dbpedia-self.n_relations] = 1
-        return userIdx, torch.tensor(dbpediaId, dtype=torch.long), torch.tensor(context_vector, dtype=torch.long), torch.tensor(context_mask, dtype=torch.long), context_pos, torch.tensor(context_vm, dtype=torch.float64), torch.tensor(response_vector, dtype=torch.long), torch.tensor(response_mask, dtype=torch.long), concept_vector, dbpedia_vector, user_vector
+        return userIdx, torch.tensor(dbpediaId, dtype=torch.long), torch.tensor(context_vector, dtype=torch.long), torch.tensor(context_mask, dtype=torch.long), context_pos, torch.tensor(context_vm, dtype=torch.float64), torch.tensor(response_vector, dtype=torch.long), concept_vector, dbpedia_vector, user_vector
 
     def __len__(self):
         return len(self.datapre)
